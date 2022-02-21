@@ -4,8 +4,6 @@ set EDITOR "micro"
 set VISUAL "kate"
 set fish_greeting
 
-## Source .profile to apply its values
-source ~/.profile
 
 ## Lambda theme https://github.com/hasanozgan/theme-lambda
 function fish_prompt
@@ -148,24 +146,11 @@ if type "wal" >> /dev/null 2>&1
    cat ~/.cache/wal/sequences
 end
 
-## Run neofetch if session is interactive
-if status --is-interactive
-   neofetch
-end
-
 ## Git alias
 alias gff='git flow feature'
 alias gfr='git flow release'
 alias gco='git checkout'
 
-## My common
-alias vim='nvim'
-
-## starship
-starship init fish | source
-
-## set primary screen
-xrandr --output HDMI-1 --primary --left-of eDP-1
-
-## Editor
-set -gx EDITOR nvim
+## Docker
+alias dc='docker-compose'
+alias dce='docker-compose exec'
