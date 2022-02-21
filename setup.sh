@@ -1,5 +1,8 @@
-#!/bin/sh
-cp ./.profile ~/.profile
+#!/usr/bin/env bash
 
-cp  -r ./fish/ ~/.config/fish
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+cp $DIR/.profile ~/.profile
+
+cp  -r $DIR/fish/ ~/.config/fish
 sudo chsh -s /usr/bin/fish
