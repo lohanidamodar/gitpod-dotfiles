@@ -2,11 +2,16 @@
 
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-cp $DIR/.bash_profile ~/.bash_profile
+echo "copy bashrc"
+cp $DIR/.bashrc $HOME/.bashrc
 
-source ~/.bash_profile
+echo "copying bash profile"
+cp $DIR/.bash_profile $HOME/.bash_profile
 
+
+echo "installing exa"
 sh $DIR/install_exa.sh
 
+echo "installing fish config and setthing fish as default shell"
 cp  -r $DIR/fish/ ~/.config/fish
 sudo chsh -s /usr/bin/fish
