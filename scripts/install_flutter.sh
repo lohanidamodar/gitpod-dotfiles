@@ -16,6 +16,8 @@ sudo dpkg -i google-chrome-stable_current_amd64.deb
 
 sudo apt-get install -f
 
+rm google-chrome-stable_current_amd64.deb
+
 source ~/.bashrc
 
 flutter precache
