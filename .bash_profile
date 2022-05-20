@@ -28,8 +28,8 @@ alias gsh="git stash"
 alias dc="docker-compose"
 alias dce="docker-compose exec"
 
-#directory
-alias ls='exa -al --color=always --group-directories-first' # preferred listing
-alias la='exa -a --color=always --group-directories-first'  # all files and dirs
-alias ll='exa -l --color=always --group-directories-first'  # long format
-alias lt='exa -aT --color=always --group-directories-first' # tree listing
+# #directory
+# alias ls='exa -al --color=always --group-directories-first' # preferred listing
+# alias la='exa -a --color=always --group-directories-first'  # all files and dirs
+# alias ll='exa -l --color=always --group-directories-first'  # long format
+# alias lt='exa -aT --color=always --group-directories-first' # tree listing
