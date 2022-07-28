@@ -16,5 +16,5 @@ echo "installing fish 3"
 sh $DIR/scripts/install_fish3.sh
 
 echo "installing fish config and setthing fish as default shell"
-cp  -r $DIR/fish/ ~/.config/fish
+cp  -r $DIR/fish/* ~/.config/fish
 sudo chsh -s /usr/bin/fish
