@@ -16,5 +16,6 @@ echo "installing fish 3"
 sh $DIR/scripts/install_fish3.sh
 
 echo "installing fish config and setthing fish as default shell"
-cp  -r $DIR/fish/* /home/gitpod/.config/fish
+mkdir -p ~/.config/fish >/dev/null 2>&1
+cp  -r $DIR/fish/* ~/.config/fish
 sudo chsh -s /usr/bin/fish
