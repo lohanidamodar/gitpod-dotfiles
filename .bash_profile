@@ -25,8 +25,10 @@ alias gco="git checkout"
 alias gsh="git stash"
 
 ## docker
-alias dc="docker-compose"
-alias dce="docker-compose exec"
+alias dc="docker compose"
+alias dce="docker compose exec"
+alias dcea="docker compose exec appwrite"
+alias dcfr="docker compose up -d --force-recreate"
 
 # #directory
 # alias ls='exa -al --color=always --group-directories-first' # preferred listing

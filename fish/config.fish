@@ -149,5 +149,7 @@ alias gfr='git flow release'
 alias gco='git checkout'
 
 ## Docker
-alias dc='docker-compose'
-alias dce='docker-compose exec'
+alias dc="docker compose"
+alias dce="docker compose exec"
+alias dcea="docker compose exec appwrite"
+alias dcfr="docker compose up -d --force-recreate"
