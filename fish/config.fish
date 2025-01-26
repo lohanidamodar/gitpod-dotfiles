@@ -156,3 +156,6 @@ alias dcfr="docker compose up -d --force-recreate"
 
 ## Docker login script
 alias dclo="~/.dotfiles/scripts/docker_login.sh"
+
+## appwrite redis
+alias aprf="~/.dotfiles/scripts/redis_flushall.sh"
