@@ -10,10 +10,11 @@ cp $DIR/.bash_profile $HOME/.bash_profile
 
 
 echo "installing exa"
-sh $DIR/scripts/install_exa.sh
+sh $DIR/scripts/build_exa/build_exa.sh
+# sh $DIR/scripts/install_exa.sh
 
-echo "installing fish 3"
-sh $DIR/scripts/install_fish3.sh
+# echo "installing fish 3"
+# sh $DIR/scripts/install_fish3.sh
 
 echo "installing fish config and setthing fish as default shell"
 mkdir -p ~/.config/fish >/dev/null 2>&1
