@@ -159,3 +159,10 @@ alias dclo="~/.dotfiles/scripts/docker_login.sh"
 
 ## appwrite redis
 alias aprf="~/.dotfiles/scripts/redis_flushall.sh"
+
+## composer
+alias cinst="composer install --ignore-platform-reqs"
+alias cupdt="composer update --ignore-platform-reqs"
+
+## appwrite cloud init
+alias acinit="dclo && cinst && composer format && dc build appwrte && dc up -d && dc logs -f appwrite"
