@@ -20,7 +20,7 @@ echo "installing exa"
 # sh $DIR/scripts/install_exa.sh
 if ! command -v exa >/dev/null 2>&1; then
     echo "exa not found, installing exa"
-    sh $DIR/scripts/build_exa/build_exa.sh
+    sh $DIR/scripts/install_exa.sh
 else
     echo "exa already installed, skipping"
 fi
