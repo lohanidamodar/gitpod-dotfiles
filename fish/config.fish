@@ -163,6 +163,7 @@ alias aprf="~/.dotfiles/scripts/redis_flushall.sh"
 ## composer
 alias cinst="composer install --ignore-platform-reqs"
 alias cupdt="composer update --ignore-platform-reqs"
+alias cfmt="composer format"
 
 ## appwrite cloud init
 alias acinit="dclo && cinst && composer format && dc build appwrite && dc up -d && dc logs -f appwrite"
