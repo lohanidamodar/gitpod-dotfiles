@@ -147,12 +147,17 @@ end
 alias gff='git flow feature'
 alias gfr='git flow release'
 alias gco='git checkout'
+alias gcb='git checkout -b'
+alias gl='git log --oneline --graph --decorate --all'
 
 ## Docker
 alias dc="docker compose"
 alias dce="docker compose exec"
 alias dcea="docker compose exec appwrite"
 alias dcfr="docker compose up -d --force-recreate"
+alias dcl="docker compose logs -f"
+alias dcb="docker compose build"
+alias dcdl="docker compose down --rmi all --volumes --remove-orphans"
 
 ## Docker login script
 alias dclo="~/.dotfiles/scripts/docker_login.sh"
