@@ -12,7 +12,15 @@ function fish_prompt
 
   # Just calculate these once, to save a few cycles when displaying the prompt
   if not set -q __fish_prompt_hostname
-    set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
+    # Use fish's built-in $hostname (fish >= 3.2) so we don't depend on the
+    # `hostname` binary, which isn't installed on a minimal Arch/WSL system.
+    if set -q hostname
+      set -g __fish_prompt_hostname (string split -f1 . -- $hostname)
+    else if type -q prompt_hostname
+      set -g __fish_prompt_hostname (prompt_hostname)
+    else
+      set -g __fish_prompt_hostname (uname -n | cut -d . -f 1)
+    end
   end
   if not set -q __fish_prompt_char
     switch (id -u)
