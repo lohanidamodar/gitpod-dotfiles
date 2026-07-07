@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 # clone https://github.com/lohanidamodar/gitpod-dotfiles.git to ~/.dotfiles
 # then run the ~/.dotfiles/setup.sh script'
-# USE: curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | bash 
+# USE: curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | bash
+#
+# PREREQUISITES: git and curl (this script clones over git; curl fetched it).
+# On a fresh box install them first (drop the `sudo` if you're root):
+#   Arch:          sudo pacman -Sy --needed --noconfirm git curl
+#   Debian/Ubuntu: sudo apt-get update && sudo apt-get install -y git curl
+#   Fedora:        sudo dnf install -y git curl
+#   openSUSE:      sudo zypper install -y git curl
+#   Alpine:        sudo apk add git curl
+#
+# Root-only Arch/WSL? Create a non-root sudo user first (installs sudo too):
+#   bash scripts/create_sudo_user.sh <username>   # run as root
 
 echo "Checking and cloning dotfiles repository to ${HOME}/.dotfiles"
 
