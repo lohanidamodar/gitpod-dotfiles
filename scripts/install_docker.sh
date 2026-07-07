@@ -1,33 +1,42 @@
 #!/usr/bin/env bash
+# Install Docker cross-distro.
+# The get.docker.com convenience script does NOT support Arch, so we install
+# from the repos there; everywhere else we use the official script.
+set -euo pipefail
+DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+# shellcheck source=common.sh
+. "$DIR/common.sh"
 
-# Function to check if Docker is installed
-check_docker_installed() {
-    if [ -x "$(command -v docker)" ]; then
-        echo "Docker is already installed."
-        return 0
-    else
-        echo "Docker is not installed. Installing Docker..."
-        return 1
-    fi
-}
-
-# Function to install Docker using the official script from get.docker.com
-install_docker() {
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    rm get-docker.sh
-}
-
-# Check if Docker is installed
-if ! check_docker_installed; then
-    # Install Docker if not present
-    install_docker
+if need_cmd docker; then
+    info "docker already installed: $(docker --version)"
+    exit 0
 fi
 
-# Check Docker status and output Docker version
-if [ -x "$(command -v docker)" ]; then
-    echo "Docker installation was successful."
-    docker --version
+case "$PKG" in
+    pacman)
+        pkg_install docker docker-compose
+        if need_cmd systemctl && ! is_wsl; then
+            $SUDO systemctl enable --now docker.service || true
+        fi
+        ;;
+    *)
+        info "installing docker via get.docker.com"
+        need_cmd curl || pkg_install curl
+        tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+        curl -fsSL https://get.docker.com -o "$tmp/get-docker.sh"
+        $SUDO sh "$tmp/get-docker.sh"
+        ;;
+esac
+
+# Let the current user run docker without sudo.
+if [ "$(id -u)" -ne 0 ] && getent group docker >/dev/null 2>&1; then
+    $SUDO usermod -aG docker "$USER" || true
+    info "added $USER to the docker group (log out/in for it to take effect)"
+fi
+
+if need_cmd docker; then
+    info "docker installed: $(docker --version)"
 else
-    echo "Docker installation failed."
+    err "docker installation failed"
+    exit 1
 fi

@@ -117,6 +117,11 @@ fi
 
 PS1='\[[01;32m\]\u\[[00m\] \[[01;34m\]\w\[[00m\]$(__git_ps1 " (%s)") $ '
 
-for i in $(ls -A $HOME/.bashrc.d/); do source $HOME/.bashrc.d/$i; done
+if [ -d "$HOME/.bashrc.d" ]; then
+  for i in "$HOME"/.bashrc.d/*; do [ -e "$i" ] && source "$i"; done
+fi
 
-. "$HOME/.cargo/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
+# user's private bins (claude, antigravity, bun, dart, flutter, etc.)
+[ -d "$HOME/.local/bin" ] && case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH";; esac

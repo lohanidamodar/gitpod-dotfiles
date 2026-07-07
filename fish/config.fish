@@ -116,10 +116,24 @@ function copy
 end
 
 ## Useful aliases
-alias ls='exa -al --color=always --group-directories-first' # preferred listing
-alias la='exa -a --color=always --group-directories-first'  # all files and dirs
-alias ll='exa -l --color=always --group-directories-first'  # long format
-alias lt='exa -aT --color=always --group-directories-first' # tree listing
+# Prefer eza/exa when available, otherwise fall back to plain ls so these
+# never break a shell where exa was skipped (e.g. this Arch/WSL setup).
+if type -q eza
+    alias ls='eza -al --color=always --group-directories-first'
+    alias la='eza -a --color=always --group-directories-first'
+    alias ll='eza -l --color=always --group-directories-first'
+    alias lt='eza -aT --color=always --group-directories-first'
+else if type -q exa
+    alias ls='exa -al --color=always --group-directories-first'
+    alias la='exa -a --color=always --group-directories-first'
+    alias ll='exa -l --color=always --group-directories-first'
+    alias lt='exa -aT --color=always --group-directories-first'
+else
+    alias ls='ls --color=auto'
+    alias la='ls -A --color=auto'
+    alias ll='ls -alh --color=auto'
+    alias lt='ls -R --color=auto'
+end
 
 alias tarnow='tar -acf '
 alias untar='tar -zxvf '
