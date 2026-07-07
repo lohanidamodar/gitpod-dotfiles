@@ -19,6 +19,21 @@ err()  { printf '\033[1;31m[err ]\033[0m %s\n' "$*" >&2; }
 
 need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
+# Make sure user-local install dirs are visible to the scripts. The official
+# installers (claude, codex, antigravity, bun, flutter, dart, cargo) drop
+# binaries here, but a freshly-launched setup shell often doesn't have them on
+# PATH yet — so `need_cmd claude` etc. would wrongly report "not installed" and
+# reinstall on every run. Prepend the ones that aren't already present.
+for _d in "$HOME/.local/bin" "$HOME/.bun/bin" "$HOME/flutter/bin" \
+          "$HOME/dart-sdk/bin" "$HOME/.cargo/bin"; do
+    case ":$PATH:" in
+        *":$_d:"*) ;;                 # already present
+        *) [ -d "$_d" ] && PATH="$_d:$PATH" ;;
+    esac
+done
+export PATH
+unset _d
+
 # ---- privilege escalation --------------------------------------------------
 # The original scripts hard-coded `sudo`, which breaks on a fresh Arch install
 # or a WSL distro that runs as root (no sudo package present). Here we only
