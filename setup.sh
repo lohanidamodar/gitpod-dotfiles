@@ -90,6 +90,7 @@ echo
 info "Done. Open a new shell (or run: exec fish) to pick up PATH and shell changes."
 
 if is_wsl; then
-    info "WSL tip: to reuse your Windows SSH keys in here, run:"
-    info "    bash $DIR/scripts/setup_wsl_ssh_agent.sh"
+    info "WSL SSH-agent sharing (pick ONE direction):"
+    info "  keys in Windows, use from WSL:   bash $DIR/scripts/setup_wsl_ssh_agent.sh"
+    info "  keys in WSL, use from Windows:    bash $DIR/scripts/wsl_ssh_agent_serve.sh"
 fi
