@@ -15,6 +15,7 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 . "$DIR/scripts/common.sh"
 
 # ---- what to install (defaults) --------------------------------------------
+: "${INSTALL_SSH:=1}"
 : "${INSTALL_DOCKER:=1}"
 : "${INSTALL_FISH:=1}"
 : "${SET_FISH_DEFAULT:=1}"
@@ -50,6 +51,9 @@ run() {  # run <flag-value> <label> <script...>
     fi
 }
 
+# ---- ssh client ------------------------------------------------------------
+run "$INSTALL_SSH" "ssh client" "$DIR/scripts/install_ssh.sh"
+
 # ---- docker ----------------------------------------------------------------
 run "$INSTALL_DOCKER" "docker" "$DIR/scripts/install_docker.sh"
 
@@ -84,3 +88,8 @@ run "$INSTALL_DART"        "dart"              "$DIR/scripts/install_dart.sh"
 
 echo
 info "Done. Open a new shell (or run: exec fish) to pick up PATH and shell changes."
+
+if is_wsl; then
+    info "WSL tip: to reuse your Windows SSH keys in here, run:"
+    info "    bash $DIR/scripts/setup_wsl_ssh_agent.sh"
+fi
