@@ -5,16 +5,21 @@
 # non-root sudo user FIRST, then run this as that user:
 #     bash scripts/create_sudo_user.sh <username>   # run as root (no sudo yet)
 #
-# Toggle optional installs with env vars, e.g.:
-#     INSTALL_FLUTTER=1 INSTALL_DART=1 bash setup.sh
-#     INSTALL_DOCKER=0 bash setup.sh
+# Every install is a toggle set via env var. Flip any default with VAR=0/1, e.g.:
+#     INSTALL_CLAUDE=1 bash setup.sh                 # add the Claude CLI
+#     INSTALL_CLAUDE=1 INSTALL_CODEX=1 bash setup.sh # add several
+#     INSTALL_DOCKER=0 bash setup.sh                 # skip a default install
+# The AI coding CLIs (claude/codex/antigravity) and the extra languages/tools
+# are OPT-IN (default 0) so a plain `bash setup.sh` stays lean. See README.md
+# for the full list of options and copy-paste commands.
 set -uo pipefail
 
 DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 # shellcheck source=scripts/common.sh
 . "$DIR/scripts/common.sh"
 
-# ---- what to install (defaults) --------------------------------------------
+# ---- what to install -------------------------------------------------------
+# Default ON: the base shell + dev environment.
 : "${INSTALL_SSH:=1}"
 : "${INSTALL_DOCKER:=1}"
 : "${INSTALL_FISH:=1}"
@@ -25,11 +30,21 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 : "${INSTALL_BUN:=1}"
 : "${INSTALL_GH:=1}"
 : "${INSTALL_DOCTL:=1}"
-: "${INSTALL_CLAUDE:=1}"
-: "${INSTALL_CODEX:=1}"
-: "${INSTALL_ANTIGRAVITY:=1}"
-: "${INSTALL_FLUTTER:=0}"   # heavy — opt in
-: "${INSTALL_DART:=0}"      # opt in (Flutter already bundles Dart)
+
+# Opt-in (default 0): AI coding CLIs. Enable with INSTALL_CLAUDE=1 etc.
+: "${INSTALL_CLAUDE:=0}"
+: "${INSTALL_CODEX:=0}"
+: "${INSTALL_ANTIGRAVITY:=0}"
+
+# Opt-in (default 0): extra languages / tools.
+: "${INSTALL_FLUTTER:=0}"   # heavy
+: "${INSTALL_DART:=0}"      # (Flutter already bundles Dart)
+: "${INSTALL_PHP:=0}"       # latest stable PHP + common extensions
+: "${INSTALL_COMPOSER:=0}"  # implies PHP
+: "${INSTALL_RUBY:=0}"
+: "${INSTALL_SWIFT:=0}"
+: "${INSTALL_EZA:=0}"       # modern ls (fish aliases already prefer it)
+: "${INSTALL_OLLAMA:=0}"
 
 info "distro=$DISTRO_ID  pkg=$PKG  sudo='${SUDO:-<root>}'  wsl=$(is_wsl && echo yes || echo no)"
 
@@ -59,8 +74,6 @@ run "$INSTALL_SSH" "ssh client" "$DIR/scripts/install_ssh.sh"
 # ---- docker ----------------------------------------------------------------
 run "$INSTALL_DOCKER" "docker" "$DIR/scripts/install_docker.sh"
 
-# ---- exa: intentionally skipped (dropped from these dotfiles) --------------
-
 # ---- fish + config ---------------------------------------------------------
 run "$INSTALL_FISH" "fish shell" "$DIR/scripts/install_fish3.sh"
 
@@ -85,16 +98,26 @@ fi
 run "$INSTALL_NERD_FONT" "nerd fonts"  "$DIR/scripts/install_nerd_font.sh"
 run "$INSTALL_TMUX"      "tmux"        "$DIR/scripts/install_tmux.sh"
 
-# ---- dev CLIs --------------------------------------------------------------
+# ---- dev CLIs (default on) -------------------------------------------------
 run "$INSTALL_NODE"        "node + npm"        "$DIR/scripts/install_node.sh"
 run "$INSTALL_BUN"         "bun"               "$DIR/scripts/install_bun.sh"
 run "$INSTALL_GH"          "github cli"        "$DIR/scripts/install_gh.sh"
 run "$INSTALL_DOCTL"       "digitalocean cli"  "$DIR/scripts/install_doctl.sh"
+
+# ---- AI coding CLIs (opt-in: INSTALL_CLAUDE=1 etc.) ------------------------
 run "$INSTALL_CLAUDE"      "claude cli"        "$DIR/scripts/install_claude_cli.sh"
 run "$INSTALL_CODEX"       "codex cli"         "$DIR/scripts/install_codex_cli.sh"
 run "$INSTALL_ANTIGRAVITY" "antigravity cli"   "$DIR/scripts/install_antigravity_cli.sh"
+
+# ---- extra languages / tools (opt-in) --------------------------------------
 run "$INSTALL_FLUTTER"     "flutter"           "$DIR/scripts/install_flutter.sh"
 run "$INSTALL_DART"        "dart"              "$DIR/scripts/install_dart.sh"
+run "$INSTALL_PHP"         "php"               "$DIR/scripts/install_php.sh"
+run "$INSTALL_COMPOSER"    "composer"          "$DIR/scripts/install_composer.sh"
+run "$INSTALL_RUBY"        "ruby"              "$DIR/scripts/install_ruby.sh"
+run "$INSTALL_SWIFT"       "swift"             "$DIR/scripts/install_swift.sh"
+run "$INSTALL_EZA"         "eza"               "$DIR/scripts/install_eza.sh"
+run "$INSTALL_OLLAMA"      "ollama"            "$DIR/scripts/install_ollama_cli.sh"
 
 echo
 info "Done. Open a new shell (or run: exec fish) to pick up PATH and shell changes."
