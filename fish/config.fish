@@ -1,8 +1,19 @@
 ## Set environment
-set TERM "xterm-256color"             
+set TERM "xterm-256color"
 set EDITOR "micro"
 set VISUAL "kate"
 set fish_greeting
+
+## Ensure user-local install dirs are on PATH.
+## Official installers (claude, bun, cargo, flutter, dart) drop binaries in
+## these; keep them here rather than in fish_variables so PATH never depends
+## on a stale universal $PATH captured on some other machine. Prepend so the
+## native tools win over any Windows .exe shims inherited via WSL interop.
+for dir in $HOME/.local/bin $HOME/.bun/bin $HOME/.cargo/bin $HOME/flutter/bin $HOME/dart-sdk/bin
+    if test -d $dir; and not contains $dir $PATH
+        set -gx PATH $dir $PATH
+    end
+end
 
 
 ## Lambda theme https://github.com/hasanozgan/theme-lambda

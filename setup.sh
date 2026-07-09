@@ -66,7 +66,11 @@ run "$INSTALL_FISH" "fish shell" "$DIR/scripts/install_fish3.sh"
 
 info "installing fish config"
 mkdir -p "$HOME/.config/fish"
-cp -r "$DIR"/fish/* "$HOME/.config/fish/"
+# Copy everything EXCEPT fish_variables: that file holds per-machine universal
+# state (including a captured $PATH) and deploying it clobbers the local shell's
+# PATH — which previously hid the WSL-native `claude` behind Windows' claude.exe.
+find "$DIR/fish" -mindepth 1 -maxdepth 1 ! -name fish_variables \
+    -exec cp -r {} "$HOME/.config/fish/" \;
 
 if [ "$SET_FISH_DEFAULT" = "1" ] && need_cmd fish; then
     fish_path="$(command -v fish)"

@@ -30,12 +30,24 @@ else
         || warn "TPM clone failed; the theme still works, plugins won't install"
 fi
 
-# ---- install the plugins headlessly ----------------------------------------
-# TPM's installer reads the plugin list from the config we just copied.
+# ---- install the plugins headlessly (only what's missing) ------------------
+# TPM's installer reads the plugin list from the config we just copied. We only
+# invoke it when a declared plugin dir is actually absent, so re-running setup
+# is a no-op instead of re-cloning everything.
+PLUGIN_PATH="$HOME/.tmux/plugins"
 if [ -x "$TPM_DIR/bin/install_plugins" ]; then
-    info "installing tmux plugins"
-    TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" \
-        "$TPM_DIR/bin/install_plugins" || warn "plugin install had issues; run prefix+I inside tmux"
+    missing=0
+    while read -r repo; do
+        [ -d "$PLUGIN_PATH/${repo##*/}" ] || { missing=1; break; }
+    done < <(grep -oE "@plugin '[^']+'" "$HOME/.config/tmux/tmux.conf" | sed -E "s/@plugin '([^']+)'/\1/")
+
+    if [ "$missing" -eq 1 ]; then
+        info "installing missing tmux plugins"
+        TMUX_PLUGIN_MANAGER_PATH="$PLUGIN_PATH/" \
+            "$TPM_DIR/bin/install_plugins" || warn "plugin install had issues; run prefix+I inside tmux"
+    else
+        info "tmux plugins already installed"
+    fi
 fi
 
 info "tmux ready. Start it with: tmux   (prefix is Ctrl+Space)"
