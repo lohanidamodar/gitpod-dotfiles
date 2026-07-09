@@ -19,6 +19,8 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 : "${INSTALL_DOCKER:=1}"
 : "${INSTALL_FISH:=1}"
 : "${SET_FISH_DEFAULT:=1}"
+: "${INSTALL_TMUX:=1}"
+: "${INSTALL_NERD_FONT:=1}"
 : "${INSTALL_NODE:=1}"
 : "${INSTALL_BUN:=1}"
 : "${INSTALL_GH:=1}"
@@ -74,6 +76,10 @@ if [ "$SET_FISH_DEFAULT" = "1" ] && need_cmd fish; then
         $SUDO chsh -s "$fish_path" "$USER" || chsh -s "$fish_path" || warn "chsh failed; change your shell manually"
     fi
 fi
+
+# ---- terminal multiplexer + fonts ------------------------------------------
+run "$INSTALL_NERD_FONT" "nerd fonts"  "$DIR/scripts/install_nerd_font.sh"
+run "$INSTALL_TMUX"      "tmux"        "$DIR/scripts/install_tmux.sh"
 
 # ---- dev CLIs --------------------------------------------------------------
 run "$INSTALL_NODE"        "node + npm"        "$DIR/scripts/install_node.sh"

@@ -14,17 +14,23 @@
 # Root-only Arch/WSL? Create a non-root sudo user first (installs sudo too):
 #   bash scripts/create_sudo_user.sh <username>   # run as root
 
-echo "Checking and cloning dotfiles repository to ${HOME}/.dotfiles"
+REPO_URL="https://github.com/lohanidamodar/gitpod-dotfiles.git"
+DOTFILES="${HOME}/.dotfiles"
 
-if [ -d "${HOME}/.dotfiles" ]; then
-  echo "Dotfiles directory already exists at ${HOME}/.dotfiles"
-  echo "Updating existing dotfiles..."
-  
-  cd "${HOME}/.dotfiles" || exit 1
-    git pull origin main
+echo "Checking dotfiles repository at ${DOTFILES}"
+
+if [ -d "${DOTFILES}/.git" ]; then
+  # Already a git clone — update it in place.
+  echo "Dotfiles already cloned; pulling latest..."
+  branch="$(git -C "${DOTFILES}" symbolic-ref --short HEAD 2>/dev/null || echo main)"
+  git -C "${DOTFILES}" pull --ff-only origin "${branch}" \
+    || echo "WARNING: git pull failed (local changes?); using existing checkout."
+elif [ -d "${DOTFILES}" ]; then
+  # Directory exists but isn't a git repo — don't clobber it, just warn.
+  echo "WARNING: ${DOTFILES} exists but is not a git repo; using it as-is."
 else
   echo "Cloning repository..."
-  git clone https://github.com/lohanidamodar/gitpod-dotfiles.git "${HOME}/.dotfiles"
+  git clone "${REPO_URL}" "${DOTFILES}"
 fi
 
 
