@@ -1,34 +1,34 @@
 #!/usr/bin/env bash
+# Install the Ollama CLI from the official release archive, cross-distro.
 set -euo pipefail
+DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+# shellcheck source=common.sh
+. "$DIR/common.sh"
 
-if command -v ollama >/dev/null 2>&1; then
-    echo "[info] ollama already installed at $(command -v ollama)"
-    ollama --version 2>&1 | head -1 || true
+if need_cmd ollama; then
+    info "ollama already installed at $(command -v ollama): $(ollama --version 2>&1 | head -1)"
     exit 0
 fi
 
-arch=$(uname -m)
-case "$arch" in
+case "$(uname -m)" in
     x86_64)        pkg=ollama-linux-amd64.tar.zst ;;
     aarch64|arm64) pkg=ollama-linux-arm64.tar.zst ;;
-    *) echo "Unsupported architecture: $arch" >&2; exit 1 ;;
+    *) err "Unsupported architecture: $(uname -m)"; exit 1 ;;
 esac
 
-if ! command -v zstd >/dev/null 2>&1; then
-    echo "[info] installing zstd (required to extract release archive)"
-    sudo apt-get update -qq && sudo apt-get install -y zstd
+need_cmd curl || pkg_install curl
+if ! need_cmd zstd; then
+    info "installing zstd (required to extract the release archive)"
+    pkg_install zstd
 fi
 
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
-
+tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 url="https://github.com/ollama/ollama/releases/latest/download/$pkg"
-echo "[info] downloading $url"
+info "downloading $url"
 curl --fail --location --progress-bar "$url" -o "$tmp/$pkg"
 
-echo "[info] extracting to /usr (requires sudo)"
-sudo tar --zstd -C /usr -xf "$tmp/$pkg"
+info "extracting to /usr"
+$SUDO tar --zstd -C /usr -xf "$tmp/$pkg"
 
-echo "[ok] installed: $(ollama --version 2>&1 | head -1)"
-echo
+info "ollama installed: $(ollama --version 2>&1 | head -1)"
 echo "OLLAMA_HOST is read from your environment; do not run 'ollama serve' here."

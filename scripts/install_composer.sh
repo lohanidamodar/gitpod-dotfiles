@@ -1,66 +1,50 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Install Composer (PHP package manager) cross-distro.
+# On Arch it's a repo package; elsewhere we use the official, checksum-verified
+# installer and drop the phar into /usr/local/bin.
+set -euo pipefail
+DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+# shellcheck source=common.sh
+. "$DIR/common.sh"
 
-# Bash script to install Composer on Ubuntu
+if need_cmd composer; then
+    info "composer already installed: $(composer --version 2>/dev/null | head -1)"
+    exit 0
+fi
 
-# Exit script on error
-set -e
+# Composer needs PHP. Install it via our php script if missing.
+if ! need_cmd php; then
+    info "php not found — installing it first"
+    "$DIR/install_php.sh"
+fi
 
-# Function to print messages
-echo_info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
-}
-echo_success() {
-    echo -e "\033[1;32m[SUCCESS]\033[0m $1"
-}
-echo_error() {
-    echo -e "\033[1;31m[ERROR]\033[0m $1"
-}
+# Arch packages Composer directly — simplest, keeps it updated with pacman.
+if [ "$PKG" = "pacman" ]; then
+    if pkg_install composer; then
+        info "composer installed via pacman: $(composer --version 2>/dev/null | head -1)"
+        exit 0
+    fi
+    warn "pacman composer install failed; falling back to the official installer"
+fi
 
-# Check for root privileges
-if [ "$EUID" -ne 0 ]; then
-    echo_error "Please run as root or use sudo."
+need_cmd curl  || pkg_install curl
+need_cmd unzip || pkg_install unzip
+
+tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+info "downloading Composer installer"
+curl -fsSL https://getcomposer.org/installer -o "$tmp/composer-setup.php"
+
+info "verifying installer checksum"
+expected="$(curl -fsSL https://composer.github.io/installer.sig)"
+actual="$(php -r "echo hash_file('sha384', '$tmp/composer-setup.php');")"
+if [ "$expected" != "$actual" ]; then
+    err "Composer installer checksum mismatch — aborting"
     exit 1
 fi
 
-# Update package list
-echo_info "Updating package list..."
-apt update
+info "installing composer to /usr/local/bin"
+# Run the phar installer, then place the binary with the right privileges.
+php "$tmp/composer-setup.php" --install-dir="$tmp" --filename=composer
+$SUDO install -m 0755 "$tmp/composer" /usr/local/bin/composer
 
-# Install PHP and required dependencies
-echo_info "Installing PHP and required dependencies..."
-apt install -y php-cli unzip curl
-
-# Download the Composer installer
-echo_info "Downloading Composer installer..."
-curl -sS https://getcomposer.org/installer -o composer-setup.php
-
-# Verify the installer checksum
-echo_info "Verifying installer checksum..."
-EXPECTED_SIGNATURE=$(curl -sS https://composer.github.io/installer.sig)
-ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', 'composer-setup.php');")
-
-if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]; then
-    echo_error "Installer checksum verification failed. Aborting."
-    rm composer-setup.php
-    exit 1
-fi
-
-echo_success "Installer checksum verified."
-
-# Run the installer
-echo_info "Installing Composer..."
-php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-
-# Clean up
-echo_info "Cleaning up..."
-rm composer-setup.php
-
-# Verify installation
-echo_info "Verifying Composer installation..."
-if command -v composer > /dev/null; then
-    echo_success "Composer installed successfully!"
-    composer --version
-else
-    echo_error "Composer installation failed."
-    exit 1
-fi
+info "composer installed: $(composer --version 2>/dev/null | head -1)"
