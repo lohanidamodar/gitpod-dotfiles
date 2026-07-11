@@ -1,0 +1,70 @@
+# Managed by github.com/lohanidamodar/gitpod-dotfiles (setup.sh -> ~/.gitconfig).
+# Public-safe: NO personal identity here. Your name/email live in the untracked
+# ~/.gitconfig.local, pulled in by the include below (setup.sh seeds it from
+# whatever identity you already had).
+
+[include]
+    path = ~/.gitconfig.local
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = false
+
+[push]
+    autoSetupRemote = true
+
+[fetch]
+    prune = true
+
+[core]
+    # Use git-delta when installed (see INSTALL_SHELL_UTILS); fall back to less
+    # so this config is safe even without delta. Git runs the value via a shell,
+    # so `||` picks less when `delta` isn't on PATH.
+    pager = delta || less -R
+    autocrlf = input
+    # editor is intentionally unset: git honours $EDITOR/$VISUAL, which the
+    # deployed ~/.zshrc points at an editor that actually exists.
+
+[interactive]
+    diffFilter = delta --color-only || cat
+
+[delta]
+    navigate = true
+    line-numbers = true
+    side-by-side = false
+
+[merge]
+    conflictstyle = zdiff3
+
+[diff]
+    colorMoved = default
+    algorithm = histogram
+
+[color]
+    ui = auto
+
+[rerere]
+    enabled = true
+
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+
+[alias]
+    st = status -sb
+    co = checkout
+    cob = checkout -b
+    br = branch
+    ci = commit
+    cm = commit -m
+    amend = commit --amend --no-edit
+    lg = log --oneline --graph --decorate --all
+    last = log -1 HEAD --stat
+    unstage = reset HEAD --
+    undo = reset --soft HEAD~1
+    wip = !git add -A && git commit -m wip
+    aliases = config --get-regexp ^alias\\.
