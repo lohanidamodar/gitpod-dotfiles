@@ -12,6 +12,15 @@ if need_cmd docker; then
     exit 0
 fi
 
+# macOS: Docker Engine isn't native — install Docker Desktop via cask.
+if is_mac; then
+    info "installing Docker Desktop via brew (--cask docker)"
+    brew install --cask docker \
+        && info "Docker Desktop installed; launch it once to start the engine" \
+        || warn "Docker Desktop install failed"
+    exit 0
+fi
+
 case "$PKG" in
     pacman)
         pkg_install docker docker-compose

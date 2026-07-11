@@ -17,6 +17,15 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 NERD_VERSION="${NERD_VERSION:-v3.4.0}"
 FONT_DIR="$HOME/.local/share/fonts/NerdFonts"
 
+# macOS: install via Homebrew casks (fonts land in ~/Library/Fonts, no fc-cache).
+if is_mac; then
+    info "installing Nerd Fonts via brew casks"
+    brew install --cask font-jetbrains-mono-nerd-font font-symbols-only-nerd-font \
+        && info "Nerd Fonts installed. Set your terminal font to 'JetBrainsMono Nerd Font'." \
+        || warn "Nerd Font cask install failed"
+    exit 0
+fi
+
 # fc-cache lives in fontconfig; make sure it's around for the fallback path.
 need_cmd fc-cache || pkg_install fontconfig || warn "couldn't install fontconfig"
 

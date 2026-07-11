@@ -4,8 +4,9 @@
 #
 # Provides:
 #   $SUDO        -> "" when root, else "sudo"/"doas"   (fixes "sudo: command not found")
-#   $PKG         -> pacman | apt | dnf | zypper | apk | unknown
-#   $DISTRO_ID   -> arch, ubuntu, debian, fedora, ...  (from /etc/os-release)
+#   $PKG         -> brew | pacman | apt | dnf | zypper | apk | unknown
+#   $DISTRO_ID   -> macos, arch, ubuntu, debian, fedora, ...  (macOS reports "macos")
+#   is_mac                 -> return 0 when running on macOS
 #   is_wsl                 -> return 0 when running under WSL
 #   need_cmd <cmd>         -> return 0 if command exists
 #   info/warn/err <msg>    -> coloured logging
@@ -18,6 +19,18 @@ warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*" >&2; }
 err()  { printf '\033[1;31m[err ]\033[0m %s\n' "$*" >&2; }
 
 need_cmd() { command -v "$1" >/dev/null 2>&1; }
+
+# ---- OS detection ----------------------------------------------------------
+is_mac() { [ "$(uname -s)" = "Darwin" ]; }
+
+# On macOS, put Homebrew on PATH (Apple Silicon or Intel) so `brew` is found
+# below even in a fresh non-login shell.
+if is_mac && ! need_cmd brew; then
+    for _b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+        [ -x "$_b" ] && eval "$("$_b" shellenv)" && break
+    done
+    unset _b
+fi
 
 # Make sure user-local install dirs are visible to the scripts. The official
 # installers (claude, codex, antigravity, bun, flutter, dart, cargo) drop
@@ -52,12 +65,28 @@ fi
 
 # ---- distro / package manager detection ------------------------------------
 DISTRO_ID="unknown"
-if [ -r /etc/os-release ]; then
+if is_mac; then
+    DISTRO_ID="macos"
+elif [ -r /etc/os-release ]; then
     # shellcheck disable=SC1091
     DISTRO_ID=$(. /etc/os-release && echo "${ID:-unknown}")
 fi
 
-if   need_cmd pacman; then PKG="pacman"
+if is_mac; then
+    # Bootstrap Homebrew if it isn't installed yet — it's the package manager
+    # for everything below on macOS.
+    if ! need_cmd brew; then
+        warn "Homebrew not found; installing it (you'll be prompted for your password)…"
+        NONINTERACTIVE=1 /bin/bash -c \
+            "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+            || warn "Homebrew install failed; brew-based installs will not work"
+        for _b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+            [ -x "$_b" ] && eval "$("$_b" shellenv)" && break
+        done
+        unset _b
+    fi
+    PKG="brew"
+elif need_cmd pacman; then PKG="pacman"
 elif need_cmd apt-get; then PKG="apt"
 elif need_cmd dnf;    then PKG="dnf"
 elif need_cmd zypper; then PKG="zypper"
@@ -74,6 +103,7 @@ is_wsl() {
 # ---- package helpers -------------------------------------------------------
 pkg_refresh() {
     case "$PKG" in
+        brew)   brew update ;;                    # never under sudo
         pacman) $SUDO pacman -Sy --noconfirm ;;
         apt)    $SUDO apt-get update -qq ;;
         dnf)    $SUDO dnf -y makecache ;;
@@ -85,6 +115,7 @@ pkg_refresh() {
 
 pkg_install() {
     case "$PKG" in
+        brew)   brew install "$@" ;;              # never under sudo
         pacman) $SUDO pacman -S --needed --noconfirm "$@" ;;
         apt)    $SUDO apt-get install -y "$@" ;;
         dnf)    $SUDO dnf install -y "$@" ;;

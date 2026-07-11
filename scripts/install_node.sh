@@ -13,6 +13,7 @@ if need_cmd node && need_cmd npm; then
 fi
 
 case "$PKG" in
+    brew)   pkg_install node ;;                 # bundles npm
     pacman) pkg_install nodejs npm ;;
     dnf)    pkg_install nodejs npm ;;
     zypper) pkg_install nodejs npm ;;

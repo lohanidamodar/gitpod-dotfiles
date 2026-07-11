@@ -11,6 +11,7 @@ if need_cmd gh; then
 fi
 
 case "$PKG" in
+    brew)   pkg_install gh ;;
     pacman) pkg_install github-cli ;;
     dnf)    pkg_install gh ;;
     zypper) pkg_install gh ;;

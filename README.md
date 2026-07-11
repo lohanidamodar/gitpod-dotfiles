@@ -1,8 +1,10 @@
 # dotfiles
 
-Cross-distro dev-environment setup for **Arch, Debian/Ubuntu, Fedora** (and
-openSUSE/Alpine where practical), including under **WSL**. Installs a fish +
-tmux shell environment and a pick-and-choose set of dev tools.
+Cross-platform dev-environment setup for **macOS** and **Arch, Debian/Ubuntu,
+Fedora** (and openSUSE/Alpine where practical), including under **WSL**.
+Installs a zsh + tmux shell environment and a pick-and-choose set of dev tools.
+macOS installs everything through **Homebrew** (auto-installed if missing);
+Linux uses the native package manager.
 
 Every install is a toggle. A plain run installs a lean base; AI coding CLIs and
 extra languages are **opt-in**.
@@ -10,7 +12,8 @@ extra languages are **opt-in**.
 ## Prerequisites
 
 Just `git` and `curl` (the one-liner below fetches over curl and clones over
-git). Install them first on a fresh box — drop `sudo` if you're already root:
+git). macOS ships both. On a fresh Linux box install them first — drop `sudo`
+if you're already root:
 
 ```bash
 # Arch
@@ -50,9 +53,9 @@ installer skips work that's already done.
 | Tool | Env var | What it is |
 |------|---------|-----------|
 | OpenSSH client | `INSTALL_SSH` | `ssh`, `scp`, `ssh-keygen`, agent |
-| Docker | `INSTALL_DOCKER` | engine + compose |
-| fish | `INSTALL_FISH` | shell + this repo's config |
-| (set fish default) | `SET_FISH_DEFAULT` | `chsh` to fish |
+| Docker | `INSTALL_DOCKER` | engine + compose (Docker Desktop on macOS) |
+| zsh | `INSTALL_ZSH` | shell + plugins (autosuggestions, syntax highlight) + starship + this repo's `~/.zshrc` |
+| (set zsh default) | `SET_ZSH_DEFAULT` | `chsh` to zsh |
 | tmux | `INSTALL_TMUX` | tmux + Catppuccin config + TPM plugins |
 | Nerd Fonts | `INSTALL_NERD_FONT` | JetBrainsMono + Symbols (for icons) |
 | Node.js | `INSTALL_NODE` | node + npm |
@@ -72,6 +75,7 @@ Enable by setting the var to `1`. These are **not** installed by a plain run.
 
 | Tool | Env var | Notes |
 |------|---------|-------|
+| fish | `INSTALL_FISH` | shell + this repo's config (zsh is the default) |
 | Claude Code CLI | `INSTALL_CLAUDE` | AI coding CLI |
 | OpenAI Codex CLI | `INSTALL_CODEX` | AI coding CLI |
 | Google Antigravity CLI | `INSTALL_ANTIGRAVITY` | AI coding CLI |
@@ -81,7 +85,8 @@ Enable by setting the var to `1`. These are **not** installed by a plain run.
 | Composer | `INSTALL_COMPOSER` | implies PHP |
 | Ruby | `INSTALL_RUBY` | + bundler |
 | Swift | `INSTALL_SWIFT` | swiftly (apt/dnf) / AUR (Arch) |
-| eza | `INSTALL_EZA` | modern `ls` (fish aliases prefer it) |
+| Modern CLI utils | `INSTALL_SHELL_UTILS` | eza, bat, fd, ripgrep, fzf, zoxide, git-delta, duf, btop, jq, tealdeer |
+| eza | `INSTALL_EZA` | just eza (a subset of the bundle above) |
 | Ollama | `INSTALL_OLLAMA` | `ollama` CLI |
 
 ### Copy-paste examples
@@ -143,6 +148,41 @@ Alt-based keys are intentionally avoided so they stay free for the GlazeWM.
   bash ~/.dotfiles/scripts/wsl_ssh_agent_serve.sh   # keys in WSL, use from Windows
   ```
 
+## Shell
+
+zsh is the default login shell. The deployed `~/.zshrc` (from `zsh/.zshrc`)
+loads Homebrew (macOS or Linuxbrew), zsh-autosuggestions, zsh-syntax-highlighting,
+and the starship prompt, finding each wherever your package manager put it. It's
+a portable version of a macOS `~/.zshrc`, so it works the same on macOS and Linux.
+fish is still available opt-in with `INSTALL_FISH=1`.
+
+It also carries the aliases/functions ported from the fish config (`ls`/`ll`/`la`/`lt`,
+git `gco`/`gcb`/`gl`, docker `dc`/`dcl`/…, composer, `..`/`...`, `copy`, `backup`),
+and initializes the modern CLI tools when present. Every alias degrades
+gracefully — e.g. `ls` uses `eza` if installed, else GNU or BSD `ls` — so a
+missing tool never breaks the shell.
+
+### Modern CLI utils
+
+`INSTALL_SHELL_UTILS=1` installs a curated bundle of modern replacements, and
+`~/.zshrc` wires up their aliases/init automatically:
+
+| Tool | Replaces | Tool | Replaces |
+|------|----------|------|----------|
+| eza | `ls` | zoxide | `cd` (`z`) |
+| bat | `cat` | git-delta | git diff pager |
+| fd | `find` | duf | `df` |
+| ripgrep (`rg`) | `grep` | btop | `top` |
+| fzf | fuzzy finder | jq / tealdeer | JSON / `tldr` help |
+
+```bash
+INSTALL_SHELL_UTILS=1 bash ~/.dotfiles/setup.sh   # or: bash ~/.dotfiles/scripts/install_shell_utils.sh
+```
+
+On Debian/Ubuntu the installer symlinks `bat`→`batcat` and `fd`→`fdfind` into
+`~/.local/bin` so the usual names work. To use git-delta as your diff pager, add
+it to `~/.gitconfig` (`[core] pager = delta`).
+
 ## After installing
 
-Open a new shell (or `exec fish`) to pick up PATH and shell changes.
+Open a new shell (or `exec zsh`) to pick up PATH and shell changes.

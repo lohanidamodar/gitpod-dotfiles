@@ -4,7 +4,9 @@
 # USE: curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | bash
 #
 # PREREQUISITES: git and curl (this script clones over git; curl fetched it).
-# On a fresh box install them first (drop the `sudo` if you're root):
+# macOS ships both (git may prompt to install the Xcode CLT the first time);
+# setup.sh then installs Homebrew automatically if it's missing.
+# On a fresh Linux box install them first (drop the `sudo` if you're root):
 #   Arch:          sudo pacman -Sy --needed --noconfirm git curl
 #   Debian/Ubuntu: sudo apt-get update && sudo apt-get install -y git curl
 #   Fedora:        sudo dnf install -y git curl

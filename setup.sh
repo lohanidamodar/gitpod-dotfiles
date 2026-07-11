@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Dotfiles setup — works on Arch, Debian/Ubuntu, Fedora, and under WSL.
+# Dotfiles setup — works on macOS, Arch, Debian/Ubuntu, Fedora, and under WSL.
+# macOS uses Homebrew (auto-installed if missing); Linux uses the native manager.
 #
 # If you are on a fresh Arch/WSL box that is still root-only, create a
 # non-root sudo user FIRST, then run this as that user:
@@ -22,8 +23,9 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 # Default ON: the base shell + dev environment.
 : "${INSTALL_SSH:=1}"
 : "${INSTALL_DOCKER:=1}"
-: "${INSTALL_FISH:=1}"
-: "${SET_FISH_DEFAULT:=1}"
+: "${INSTALL_ZSH:=1}"
+: "${SET_ZSH_DEFAULT:=1}"
+: "${INSTALL_FISH:=0}"       # fish is now opt-in; zsh is the default shell
 : "${INSTALL_TMUX:=1}"
 : "${INSTALL_NERD_FONT:=1}"
 : "${INSTALL_NODE:=1}"
@@ -43,7 +45,8 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 : "${INSTALL_COMPOSER:=0}"  # implies PHP
 : "${INSTALL_RUBY:=0}"
 : "${INSTALL_SWIFT:=0}"
-: "${INSTALL_EZA:=0}"       # modern ls (fish aliases already prefer it)
+: "${INSTALL_SHELL_UTILS:=0}"  # modern CLI bundle: eza/bat/fd/rg/fzf/zoxide/...
+: "${INSTALL_EZA:=0}"          # just eza on its own (subset of shell utils)
 : "${INSTALL_OLLAMA:=0}"
 
 info "distro=$DISTRO_ID  pkg=$PKG  sudo='${SUDO:-<root>}'  wsl=$(is_wsl && echo yes || echo no)"
@@ -74,24 +77,38 @@ run "$INSTALL_SSH" "ssh client" "$DIR/scripts/install_ssh.sh"
 # ---- docker ----------------------------------------------------------------
 run "$INSTALL_DOCKER" "docker" "$DIR/scripts/install_docker.sh"
 
-# ---- fish + config ---------------------------------------------------------
+# ---- zsh + config (default login shell) ------------------------------------
+run "$INSTALL_ZSH" "zsh shell" "$DIR/scripts/install_zsh.sh"
+
+info "installing zsh config to ~/.zshrc"
+cp "$DIR/zsh/.zshrc" "$HOME/.zshrc"
+
+# ---- fish + config (opt-in) ------------------------------------------------
 run "$INSTALL_FISH" "fish shell" "$DIR/scripts/install_fish3.sh"
 
-info "installing fish config"
-mkdir -p "$HOME/.config/fish"
-# Copy everything EXCEPT fish_variables: that file holds per-machine universal
-# state (including a captured $PATH) and deploying it clobbers the local shell's
-# PATH — which previously hid the WSL-native `claude` behind Windows' claude.exe.
-find "$DIR/fish" -mindepth 1 -maxdepth 1 ! -name fish_variables \
-    -exec cp -r {} "$HOME/.config/fish/" \;
+if [ "$INSTALL_FISH" = "1" ]; then
+    info "installing fish config"
+    mkdir -p "$HOME/.config/fish"
+    # Copy everything EXCEPT fish_variables: that file holds per-machine universal
+    # state (including a captured $PATH) and deploying it clobbers the local shell's
+    # PATH — which previously hid the WSL-native `claude` behind Windows' claude.exe.
+    find "$DIR/fish" -mindepth 1 -maxdepth 1 ! -name fish_variables \
+        -exec cp -r {} "$HOME/.config/fish/" \;
+fi
 
-if [ "$SET_FISH_DEFAULT" = "1" ] && need_cmd fish; then
-    fish_path="$(command -v fish)"
-    grep -q "$fish_path" /etc/shells 2>/dev/null || echo "$fish_path" | $SUDO tee -a /etc/shells >/dev/null
-    if [ "${SHELL:-}" != "$fish_path" ]; then
-        info "setting fish ($fish_path) as default shell"
-        $SUDO chsh -s "$fish_path" "$USER" || chsh -s "$fish_path" || warn "chsh failed; change your shell manually"
-    fi
+# ---- make zsh the default login shell --------------------------------------
+if [ "$SET_ZSH_DEFAULT" = "1" ] && need_cmd zsh; then
+    zsh_path="$(command -v zsh)"
+    case "${SHELL:-}" in
+        */zsh) info "default shell already zsh (${SHELL})" ;;
+        *)
+            grep -qx "$zsh_path" /etc/shells 2>/dev/null \
+                || echo "$zsh_path" | $SUDO tee -a /etc/shells >/dev/null
+            info "setting zsh ($zsh_path) as default shell"
+            $SUDO chsh -s "$zsh_path" "$USER" || chsh -s "$zsh_path" \
+                || warn "chsh failed; change your shell manually"
+            ;;
+    esac
 fi
 
 # ---- terminal multiplexer + fonts ------------------------------------------
@@ -116,11 +133,12 @@ run "$INSTALL_PHP"         "php"               "$DIR/scripts/install_php.sh"
 run "$INSTALL_COMPOSER"    "composer"          "$DIR/scripts/install_composer.sh"
 run "$INSTALL_RUBY"        "ruby"              "$DIR/scripts/install_ruby.sh"
 run "$INSTALL_SWIFT"       "swift"             "$DIR/scripts/install_swift.sh"
+run "$INSTALL_SHELL_UTILS" "shell utils"       "$DIR/scripts/install_shell_utils.sh"
 run "$INSTALL_EZA"         "eza"               "$DIR/scripts/install_eza.sh"
 run "$INSTALL_OLLAMA"      "ollama"            "$DIR/scripts/install_ollama_cli.sh"
 
 echo
-info "Done. Open a new shell (or run: exec fish) to pick up PATH and shell changes."
+info "Done. Open a new shell (or run: exec zsh) to pick up PATH and shell changes."
 
 if is_wsl; then
     info "WSL SSH-agent sharing (pick ONE direction):"

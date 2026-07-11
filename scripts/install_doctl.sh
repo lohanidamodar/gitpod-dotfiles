@@ -11,7 +11,11 @@ if need_cmd doctl; then
     exit 0
 fi
 
-# On Arch it's packaged; prefer that when available.
+# Packaged on macOS (brew) and Arch (pacman); prefer that when available.
+if [ "$PKG" = "brew" ]; then
+    pkg_install doctl && { info "doctl installed via brew"; exit 0; } \
+        || { err "doctl brew install failed"; exit 1; }
+fi
 if [ "$PKG" = "pacman" ]; then
     pkg_install doctl && { info "doctl installed via pacman"; exit 0; } || true
 fi
