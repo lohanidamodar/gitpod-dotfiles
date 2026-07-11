@@ -56,10 +56,13 @@ Prefer to pick from a menu instead of remembering env vars? Run with `-i`:
 bash ~/.dotfiles/setup.sh -i          # or: --interactive
 ```
 
-You get a numbered list (pre-checked to the defaults below) grouped by
-category — toggle items by number, `a`/`n` for all/none, `d` to reset to
-defaults, then Enter to install (`q` to quit). It's dependency-free and reads
-the terminal directly, so it also works through the curl bootstrap:
+You get an arrow-key checklist (pre-checked to the defaults below) grouped by
+category: **↑/↓** (or `j`/`k`) to move, **Space** to toggle, `a`/`n` for
+all/none, `d` to reset to defaults, **Enter** to install, `q` to quit. It
+scrolls when the list is taller than your window. It's dependency-free (raw-key
+bash, no `gum`/`fzf`/`whiptail`) and reads the terminal directly, so it also
+works through the curl bootstrap (and falls back to a numbered menu if there's
+no arrow-key-capable terminal):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | INTERACTIVE=1 bash
@@ -72,7 +75,7 @@ The default (non-interactive) run is unchanged.
 | Tool | Env var | What it is |
 |------|---------|-----------|
 | OpenSSH client | `INSTALL_SSH` | `ssh`, `scp`, `ssh-keygen`, agent |
-| Docker | `INSTALL_DOCKER` | engine + compose (Docker Desktop on macOS) |
+| Docker | `INSTALL_DOCKER` | engine + compose (native repos on Linux; [Dory](https://github.com/Augani/dory) — open-source, macOS-native containers — on macOS) |
 | zsh | `INSTALL_ZSH` | shell + plugins (autosuggestions, syntax highlight) + starship + this repo's `~/.zshrc` |
 | (set zsh default) | `SET_ZSH_DEFAULT` | `chsh` to zsh |
 | git config | `INSTALL_GITCONFIG` | `~/.gitconfig` (delta, aliases, sane defaults); identity kept in `~/.gitconfig.local` |

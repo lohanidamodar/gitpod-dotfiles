@@ -7,17 +7,27 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 # shellcheck source=common.sh
 . "$DIR/common.sh"
 
-if need_cmd docker; then
-    info "docker already installed: $(docker --version)"
+# macOS: use Dory — a free, open-source (GPL-3.0) Docker/Linux-containers engine
+# built on Apple's native macOS containerization (Apple silicon, macOS 15+).
+# It's an OrbStack/Docker Desktop alternative: serves the Docker API on
+# ~/.dory/dory.sock and registers a `dory` docker context, so existing
+# docker/compose commands work unchanged. https://github.com/Augani/dory
+if is_mac; then
+    if brew list --cask dory >/dev/null 2>&1; then
+        info "Dory already installed"
+    else
+        info "installing Dory (open-source Docker for macOS containers)"
+        brew install --cask Augani/dory/dory || warn "Dory cask install failed"
+    fi
+    # Dory is the engine; the `docker` CLI client is separate — install it too.
+    need_cmd docker || brew install docker || warn "docker CLI install failed"
+    info "Open Dory once to start the engine (registers the 'dory' context / ~/.dory/dory.sock)."
+    info "Intel Macs also need a separate engine (Colima/Podman/…); Apple silicon is native."
     exit 0
 fi
 
-# macOS: Docker Engine isn't native — install Docker Desktop via cask.
-if is_mac; then
-    info "installing Docker Desktop via brew (--cask docker)"
-    brew install --cask docker \
-        && info "Docker Desktop installed; launch it once to start the engine" \
-        || warn "Docker Desktop install failed"
+if need_cmd docker; then
+    info "docker already installed: $(docker --version)"
     exit 0
 fi
 

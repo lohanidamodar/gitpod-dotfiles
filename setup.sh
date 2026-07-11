@@ -42,7 +42,7 @@ unset _arg
 _MENU=(
     "#|Base — shell + dev (default ON)"
     "INSTALL_SSH|OpenSSH client"
-    "INSTALL_DOCKER|Docker (Desktop on macOS)"
+    "INSTALL_DOCKER|Docker (Dory, macOS-native containers, on macOS)"
     "INSTALL_ZSH|zsh + config + starship"
     "SET_ZSH_DEFAULT|Make zsh the default shell"
     "INSTALL_GITCONFIG|git config (delta, aliases)"
@@ -78,16 +78,10 @@ _MENU=(
     "INSTALL_OLLAMA|Ollama"
 )
 
-# Draw the menu, toggle selections by number, then apply. Reads /dev/tty so it
-# works even under `curl … | bash`. Bash 3.2-safe (no associative arrays).
-interactive_menu() {
+# Fallback numbered menu — used when there's no usable arrow-key terminal.
+# Reads /dev/tty so it works even under `curl … | bash`. Bash 3.2-safe.
+_menu_numbered() {
     local tty=/dev/tty entry v label input token n idx cur mark
-    local _vars=() _defs=()
-    for entry in "${_MENU[@]}"; do
-        v="${entry%%|*}"; [ "$v" = "#" ] && continue
-        _vars+=("$v"); _defs+=("${!v}")           # snapshot defaults for 'd'
-    done
-
     while :; do
         printf '\n\033[1mSelect what to install\033[0m — toggle by number, then Enter to run.\n'
         idx=0
@@ -106,22 +100,120 @@ interactive_menu() {
         case "$input" in
             "")  break ;;
             q|Q) info "aborted; nothing installed"; exit 0 ;;
-            a|A) for v in "${_vars[@]}"; do printf -v "$v" '%s' 1; done ;;
-            n|N) for v in "${_vars[@]}"; do printf -v "$v" '%s' 0; done ;;
-            d|D) idx=0; for v in "${_vars[@]}"; do printf -v "$v" '%s' "${_defs[$idx]}"; idx=$((idx+1)); done ;;
-            *)
-                for token in $input; do
+            a|A) for v in "${_MVARS[@]}"; do printf -v "$v" '%s' 1; done ;;
+            n|N) for v in "${_MVARS[@]}"; do printf -v "$v" '%s' 0; done ;;
+            d|D) idx=0; for v in "${_MVARS[@]}"; do printf -v "$v" '%s' "${_MDEFS[$idx]}"; idx=$((idx+1)); done ;;
+            *)  for token in $input; do
                     case "$token" in *[!0-9]*|"") continue ;; esac
                     n=$((token-1))
-                    { [ "$n" -ge 0 ] && [ "$n" -lt "${#_vars[@]}" ]; } || continue
-                    v="${_vars[$n]}"; cur="${!v}"
+                    { [ "$n" -ge 0 ] && [ "$n" -lt "${#_MVARS[@]}" ]; } || continue
+                    v="${_MVARS[$n]}"; cur="${!v}"
                     if [ "$cur" = "1" ]; then printf -v "$v" '%s' 0; else printf -v "$v" '%s' 1; fi
                 done ;;
         esac
     done
+}
+
+# Arrow-key checklist: ↑/↓ (or j/k) move, Space toggles, a/n/d bulk, Enter runs,
+# q quits. Raw single-key reads from /dev/tty; scrolls when the list is taller
+# than the window. Bash 3.2-safe (integer read -t, no associative arrays).
+_menu_arrow() {
+    local entry v label
+    # Flatten _MENU into parallel row arrays; map each item row to its var index.
+    local _rtype=() _rlabel=() _rvar=()   # per display row: h/i, text, var-index|-1
+    local nvars=0 i=0
+    for entry in "${_MENU[@]}"; do
+        v="${entry%%|*}"; label="${entry#*|}"
+        if [ "$v" = "#" ]; then
+            _rtype+=("h"); _rlabel+=("$label"); _rvar+=("-1")
+        else
+            _rtype+=("i"); _rlabel+=("$label"); _rvar+=("$nvars"); nvars=$((nvars+1))
+        fi
+    done
+    local nrows=${#_rtype[@]}
+    # item index -> row index (for viewport math)
+    local _itemrow=() r=0
+    for r in $(seq 0 $((nrows-1))); do
+        [ "${_rtype[$r]}" = "i" ] && _itemrow+=("$r")
+    done
+
+    local th; th="$({ tput lines; } 2>/dev/null)"; [ -n "$th" ] || th=24
+    local visible=$((th-4)); [ "$visible" -lt 5 ] && visible=5
+    [ "$visible" -gt "$nrows" ] && visible=$nrows
+
+    local cursor=0 top=0 first=1 frame=$((visible+3)) key rest cr rr box ptr nsel up_ind dn_ind
+    # fd 3 is the terminal (read+write), opened by the caller. Hide the cursor and
+    # make sure it's restored on Ctrl-C.
+    printf '\033[?25l' >&3
+    trap 'printf "\033[?25h\n" >&3 2>/dev/null; exit 130' INT
+
+    while :; do
+        cr=${_itemrow[$cursor]}                                  # current row of cursor
+        [ "$cr" -lt "$top" ] && top=$cr
+        [ "$cr" -ge $((top+visible)) ] && top=$((cr-visible+1))
+        [ "$top" -gt $((nrows-visible)) ] && top=$((nrows-visible))
+        [ "$top" -lt 0 ] && top=0
+
+        [ "$first" = 0 ] && printf '\033[%dA' "$frame" >&3
+        first=0
+        nsel=0; for v in "${_MVARS[@]}"; do [ "${!v}" = "1" ] && nsel=$((nsel+1)); done
+        up_ind='  '; dn_ind='  '
+        [ "$top" -gt 0 ] && up_ind='▲ '
+        [ $((top+visible)) -lt "$nrows" ] && dn_ind='▼ '
+        printf '\033[K\033[1mSelect what to install\033[0m  (%d selected) %s%s\n' "$nsel" "$up_ind" "$dn_ind" >&3
+        for r in $(seq "$top" $((top+visible-1))); do
+            if [ "${_rtype[$r]}" = "h" ]; then
+                printf '\033[K  \033[1;34m%s\033[0m\n' "${_rlabel[$r]}" >&3
+            else
+                rr=${_rvar[$r]}; v="${_MVARS[$rr]}"
+                if [ "${!v}" = "1" ]; then box='\033[1;32mx\033[0m'; else box=' '; fi
+                if [ "$rr" = "$cursor" ]; then ptr='\033[1;36m❯\033[0m'; else ptr=' '; fi
+                printf '\033[K %b [%b] %s\n' "$ptr" "$box" "${_rlabel[$r]}" >&3
+            fi
+        done
+        printf '\033[K\n\033[K  \033[2m↑/↓ move · Space toggle · a all · n none · d defaults · Enter run · q quit\033[0m\n' >&3
+
+        IFS= read -rsn1 -u 3 key || key=""
+        case "$key" in
+            $'\033') IFS= read -rsn2 -t 1 -u 3 rest || rest=""
+                     case "$rest" in
+                         '[A') [ "$cursor" -gt 0 ] && cursor=$((cursor-1)) ;;
+                         '[B') [ "$cursor" -lt $((nvars-1)) ] && cursor=$((cursor+1)) ;;
+                     esac ;;
+            k|K) [ "$cursor" -gt 0 ] && cursor=$((cursor-1)) ;;
+            j|J) [ "$cursor" -lt $((nvars-1)) ] && cursor=$((cursor+1)) ;;
+            ' ') v="${_MVARS[$cursor]}"; if [ "${!v}" = "1" ]; then printf -v "$v" '%s' 0; else printf -v "$v" '%s' 1; fi ;;
+            a|A) for v in "${_MVARS[@]}"; do printf -v "$v" '%s' 1; done ;;
+            n|N) for v in "${_MVARS[@]}"; do printf -v "$v" '%s' 0; done ;;
+            d|D) i=0; for v in "${_MVARS[@]}"; do printf -v "$v" '%s' "${_MDEFS[$i]}"; i=$((i+1)); done ;;
+            q|Q) printf '\033[?25h\n' >&3; trap - INT; info "aborted; nothing installed"; exit 0 ;;
+            ''|$'\n'|$'\r') break ;;
+        esac
+    done
+    printf '\033[?25h\n' >&3; trap - INT
+}
+
+# Entry point: build shared var/default snapshots, then pick the arrow UI when a
+# real terminal is available, else the numbered fallback.
+interactive_menu() {
+    local entry v
+    _MVARS=(); _MDEFS=()
+    for entry in "${_MENU[@]}"; do
+        v="${entry%%|*}"; [ "$v" = "#" ] && continue
+        _MVARS+=("$v"); _MDEFS+=("${!v}")
+    done
+
+    # Open fd 3 read+write onto the terminal for the arrow UI. The group-scoped
+    # redirection keeps the failure quiet WITHOUT permanently silencing stderr.
+    if [ -e /dev/tty ] && { exec 3<>/dev/tty; } 2>/dev/null; then
+        _menu_arrow
+        exec 3>&-                           # close the terminal fd
+    else
+        _menu_numbered
+    fi
 
     local chosen=""
-    for v in "${_vars[@]}"; do [ "${!v}" = "1" ] && chosen="$chosen ${v#INSTALL_}"; done
+    for v in "${_MVARS[@]}"; do [ "${!v}" = "1" ] && chosen="$chosen ${v#INSTALL_}"; done
     info "installing:${chosen:- (nothing selected)}"
 }
 
