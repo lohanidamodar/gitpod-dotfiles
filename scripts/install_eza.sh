@@ -12,6 +12,11 @@ if need_cmd eza; then
     exit 0
 fi
 
+# ---- macOS: Homebrew (the release tarballs below are Linux-only) -----------
+if is_mac; then
+    pkg_install eza && { info "eza installed via brew"; exit 0; } || { err "eza brew install failed"; exit 1; }
+fi
+
 # ---- native package where available ----------------------------------------
 case "$PKG" in
     pacman) pkg_install eza && { info "eza installed via pacman"; exit 0; } || true ;;
