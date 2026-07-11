@@ -19,6 +19,112 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 # shellcheck source=scripts/common.sh
 . "$DIR/scripts/common.sh"
 
+# ---- CLI args --------------------------------------------------------------
+INTERACTIVE="${INTERACTIVE:-0}"
+for _arg in "$@"; do
+    case "$_arg" in
+        -i|--interactive) INTERACTIVE=1 ;;
+        -h|--help)
+            cat <<'USAGE'
+Usage: bash setup.sh [-i|--interactive]
+  -i, --interactive   Pick what to install from a menu (the default run is unchanged).
+  Or toggle anything non-interactively with env vars, e.g.:
+    INSTALL_DOCKER=0 INSTALL_KUBE=1 bash setup.sh
+USAGE
+            exit 0 ;;
+        *) warn "unknown argument: $_arg (ignored)" ;;
+    esac
+done
+unset _arg
+
+# Ordered menu for interactive mode; "#" entries are section headers. Each other
+# entry is "ENV_VAR|Label" and is toggled against the defaults set just below.
+_MENU=(
+    "#|Base — shell + dev (default ON)"
+    "INSTALL_SSH|OpenSSH client"
+    "INSTALL_DOCKER|Docker (Desktop on macOS)"
+    "INSTALL_ZSH|zsh + config + starship"
+    "SET_ZSH_DEFAULT|Make zsh the default shell"
+    "INSTALL_GITCONFIG|git config (delta, aliases)"
+    "INSTALL_TMUX|tmux + Catppuccin config"
+    "INSTALL_NERD_FONT|Nerd Fonts"
+    "INSTALL_NODE|Node.js + npm"
+    "INSTALL_BUN|Bun"
+    "INSTALL_GH|GitHub CLI"
+    "INSTALL_DOCTL|DigitalOcean CLI"
+    "INSTALL_FISH|fish shell + config"
+    "#|AI coding CLIs"
+    "INSTALL_CLAUDE|Claude Code CLI"
+    "INSTALL_CODEX|OpenAI Codex CLI"
+    "INSTALL_ANTIGRAVITY|Google Antigravity CLI"
+    "#|Infra + platform dev"
+    "INSTALL_KUBE|Kubernetes tools (kubectl/helm/k9s/kubectx/kubens/stern)"
+    "INSTALL_APPWRITE_CLI|Appwrite CLI"
+    "INSTALL_MISE|mise (runtime version manager)"
+    "INSTALL_DIRENV|direnv (per-dir env)"
+    "INSTALL_YQ|yq (YAML/JSON processor)"
+    "#|Languages / mobile"
+    "INSTALL_FLUTTER|Flutter SDK"
+    "INSTALL_FLUTTER_DEPS|Flutter build deps (JDK/Android/Xcode/CocoaPods/fastlane)"
+    "INSTALL_DART|Dart SDK"
+    "INSTALL_PHP|PHP + extensions"
+    "INSTALL_SWOOLE|Swoole for PHP (Appwrite core)"
+    "INSTALL_COMPOSER|Composer"
+    "INSTALL_RUBY|Ruby + bundler"
+    "INSTALL_SWIFT|Swift"
+    "#|Extra tools"
+    "INSTALL_SHELL_UTILS|Modern CLI utils (eza/bat/fd/rg/fzf/zoxide/…)"
+    "INSTALL_EZA|eza only"
+    "INSTALL_OLLAMA|Ollama"
+)
+
+# Draw the menu, toggle selections by number, then apply. Reads /dev/tty so it
+# works even under `curl … | bash`. Bash 3.2-safe (no associative arrays).
+interactive_menu() {
+    local tty=/dev/tty entry v label input token n idx cur mark
+    local _vars=() _defs=()
+    for entry in "${_MENU[@]}"; do
+        v="${entry%%|*}"; [ "$v" = "#" ] && continue
+        _vars+=("$v"); _defs+=("${!v}")           # snapshot defaults for 'd'
+    done
+
+    while :; do
+        printf '\n\033[1mSelect what to install\033[0m — toggle by number, then Enter to run.\n'
+        idx=0
+        for entry in "${_MENU[@]}"; do
+            v="${entry%%|*}"; label="${entry#*|}"
+            if [ "$v" = "#" ]; then
+                printf '\n  \033[1;34m%s\033[0m\n' "$label"
+            else
+                idx=$((idx+1)); cur="${!v}"
+                if [ "$cur" = "1" ]; then mark='\033[1;32mx\033[0m'; else mark=' '; fi
+                printf '   %2d) [%b] %s\n' "$idx" "$mark" "$label"
+            fi
+        done
+        printf '\n  numbers=toggle   a=all on   n=all off   d=defaults   Enter=run   q=quit\n> '
+        IFS= read -r input <"$tty" || input=""
+        case "$input" in
+            "")  break ;;
+            q|Q) info "aborted; nothing installed"; exit 0 ;;
+            a|A) for v in "${_vars[@]}"; do printf -v "$v" '%s' 1; done ;;
+            n|N) for v in "${_vars[@]}"; do printf -v "$v" '%s' 0; done ;;
+            d|D) idx=0; for v in "${_vars[@]}"; do printf -v "$v" '%s' "${_defs[$idx]}"; idx=$((idx+1)); done ;;
+            *)
+                for token in $input; do
+                    case "$token" in *[!0-9]*|"") continue ;; esac
+                    n=$((token-1))
+                    { [ "$n" -ge 0 ] && [ "$n" -lt "${#_vars[@]}" ]; } || continue
+                    v="${_vars[$n]}"; cur="${!v}"
+                    if [ "$cur" = "1" ]; then printf -v "$v" '%s' 0; else printf -v "$v" '%s' 1; fi
+                done ;;
+        esac
+    done
+
+    local chosen=""
+    for v in "${_vars[@]}"; do [ "${!v}" = "1" ] && chosen="$chosen ${v#INSTALL_}"; done
+    info "installing:${chosen:- (nothing selected)}"
+}
+
 # ---- what to install -------------------------------------------------------
 # Default ON: the base shell + dev environment.
 : "${INSTALL_SSH:=1}"
@@ -58,6 +164,20 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 : "${INSTALL_MISE:=0}"         # polyglot runtime version manager (node/flutter/php/…)
 : "${INSTALL_DIRENV:=0}"       # per-directory env via .envrc
 : "${INSTALL_YQ:=0}"           # YAML/JSON processor (compose + k8s manifests)
+
+# INSTALL_SWOOLE / PHP_VERSION are consumed by the child install_php.sh process,
+# so export them (env-passed vars already are; interactive picks need this too).
+export INSTALL_SWOOLE
+[ -n "${PHP_VERSION:-}" ] && export PHP_VERSION
+
+# Interactive picker (opt-in via -i / --interactive); default run is unchanged.
+if [ "$INTERACTIVE" = "1" ]; then
+    if { true >/dev/tty; } 2>/dev/null; then
+        interactive_menu
+    else
+        warn "interactive mode requested but no terminal (/dev/tty) available; using defaults/env"
+    fi
+fi
 
 info "distro=$DISTRO_ID  pkg=$PKG  sudo='${SUDO:-<root>}'  wsl=$(is_wsl && echo yes || echo no)"
 

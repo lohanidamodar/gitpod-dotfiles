@@ -48,6 +48,25 @@ bash ~/.dotfiles/setup.sh
 Re-running is safe: the bootstrap `git pull`s an existing clone, and every
 installer skips work that's already done.
 
+### Interactive mode
+
+Prefer to pick from a menu instead of remembering env vars? Run with `-i`:
+
+```bash
+bash ~/.dotfiles/setup.sh -i          # or: --interactive
+```
+
+You get a numbered list (pre-checked to the defaults below) grouped by
+category — toggle items by number, `a`/`n` for all/none, `d` to reset to
+defaults, then Enter to install (`q` to quit). It's dependency-free and reads
+the terminal directly, so it also works through the curl bootstrap:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | INTERACTIVE=1 bash
+```
+
+The default (non-interactive) run is unchanged.
+
 ## What the default run installs
 
 | Tool | Env var | What it is |
