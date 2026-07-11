@@ -114,6 +114,7 @@ Enable by setting the var to `1`. These are **not** installed by a plain run.
 | mise | `INSTALL_MISE` | polyglot runtime version manager (Node/Flutter/PHP/…) |
 | direnv | `INSTALL_DIRENV` | per-directory env via `.envrc` |
 | yq | `INSTALL_YQ` | YAML/JSON processor (compose + k8s manifests) |
+| VS Code | `INSTALL_VSCODE` | Visual Studio Code + `code` CLI (brew cask / MS repo / snap / flatpak). `INSTALL_VSCODE_EXTENSIONS=1` adds Flutter, PHP, Docker, ESLint/Prettier, GitLens, YAML, k8s extensions |
 | Modern CLI utils | `INSTALL_SHELL_UTILS` | eza, bat, fd, ripgrep, fzf, zoxide, git-delta, duf, btop, jq, tealdeer |
 | eza | `INSTALL_EZA` | just eza (a subset of the bundle above) |
 | Ollama | `INSTALL_OLLAMA` | `ollama` CLI |

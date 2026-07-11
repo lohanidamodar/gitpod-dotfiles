@@ -80,6 +80,7 @@ _MENU=(
     "INSTALL_RUBY|Ruby + bundler"
     "INSTALL_SWIFT|Swift"
     "#|Extra tools"
+    "INSTALL_VSCODE|Visual Studio Code + code CLI"
     "INSTALL_SHELL_UTILS|Modern CLI utils (eza/bat/fd/rg/fzf/zoxide/…)"
     "INSTALL_EZA|eza only"
     "INSTALL_OLLAMA|Ollama"
@@ -257,6 +258,8 @@ interactive_menu() {
 : "${INSTALL_COMPOSER:=0}"     # implies PHP
 : "${INSTALL_RUBY:=0}"
 : "${INSTALL_SWIFT:=0}"
+: "${INSTALL_VSCODE:=0}"       # Visual Studio Code + `code` CLI
+: "${INSTALL_VSCODE_EXTENSIONS:=0}"  # curated extensions; read by install_vscode.sh
 : "${INSTALL_SHELL_UTILS:=0}"  # modern CLI bundle: eza/bat/fd/rg/fzf/zoxide/...
 : "${INSTALL_EZA:=0}"          # just eza on its own (subset of shell utils)
 : "${INSTALL_OLLAMA:=0}"
@@ -268,9 +271,10 @@ interactive_menu() {
 : "${INSTALL_DIRENV:=0}"       # per-directory env via .envrc
 : "${INSTALL_YQ:=0}"           # YAML/JSON processor (compose + k8s manifests)
 
-# INSTALL_SWOOLE / PHP_VERSION are consumed by the child install_php.sh process,
-# so export them (env-passed vars already are; interactive picks need this too).
-export INSTALL_SWOOLE
+# These are consumed by child installer processes (install_php.sh /
+# install_vscode.sh), so export them — env-passed vars already are, but
+# interactive-menu picks are plain shell vars until exported here.
+export INSTALL_SWOOLE INSTALL_VSCODE_EXTENSIONS
 [ -n "${PHP_VERSION:-}" ] && export PHP_VERSION
 
 # Interactive picker (opt-in via -i / --interactive); default run is unchanged.
@@ -403,6 +407,7 @@ run "$INSTALL_PHP"         "php"               "$DIR/scripts/install_php.sh"
 run "$INSTALL_COMPOSER"    "composer"          "$DIR/scripts/install_composer.sh"
 run "$INSTALL_RUBY"        "ruby"              "$DIR/scripts/install_ruby.sh"
 run "$INSTALL_SWIFT"       "swift"             "$DIR/scripts/install_swift.sh"
+run "$INSTALL_VSCODE"      "vs code"           "$DIR/scripts/install_vscode.sh"
 run "$INSTALL_SHELL_UTILS" "shell utils"       "$DIR/scripts/install_shell_utils.sh"
 run "$INSTALL_EZA"         "eza"               "$DIR/scripts/install_eza.sh"
 run "$INSTALL_OLLAMA"      "ollama"            "$DIR/scripts/install_ollama_cli.sh"
