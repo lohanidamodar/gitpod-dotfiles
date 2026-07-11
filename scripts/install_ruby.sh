@@ -11,6 +11,7 @@ if need_cmd ruby; then
 fi
 
 case "$PKG" in
+    brew)   pkg_install ruby ;;               # bundler handled below via gem
     pacman) pkg_install ruby ruby-bundler ;;
     apt)    pkg_install ruby-full ;;          # ruby-full pulls dev headers + bundler
     dnf)    pkg_install ruby ruby-devel rubygem-bundler ;;

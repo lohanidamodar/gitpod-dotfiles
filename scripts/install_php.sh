@@ -23,6 +23,7 @@ COMMON_EXTS="mbstring curl xml zip bcmath intl gd mysqli pdo_mysql pdo_pgsql pdo
 
 if ! need_cmd php; then
 case "$PKG" in
+    brew)   pkg_install php ;;   # brew php bundles the common extensions
     pacman)
         pkg_install php
         # Extensions that live in their own packages on Arch (best-effort).

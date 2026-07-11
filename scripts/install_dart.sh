@@ -19,11 +19,12 @@ case "$(uname -m)" in
     aarch64|arm64) arch=arm64 ;;
     *) err "Unsupported architecture: $(uname -m)"; exit 1 ;;
 esac
+os=linux; is_mac && os=macos      # the archive ships linux/macos/windows builds
 
 dest="$HOME/dart-sdk"
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
-url="https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-${arch}-release.zip"
-info "downloading Dart SDK (${arch})"
+url="https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-${os}-${arch}-release.zip"
+info "downloading Dart SDK (${os}-${arch})"
 curl -fsSL "$url" -o "$tmp/dart.zip"
 unzip -q "$tmp/dart.zip" -d "$tmp"
 rm -rf "$dest"

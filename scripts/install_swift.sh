@@ -13,6 +13,18 @@ if need_cmd swift; then
     exit 0
 fi
 
+# macOS: Swift ships with the Xcode Command Line Tools (the swiftly Linux
+# toolchain below doesn't apply).
+if is_mac; then
+    if xcode-select -p >/dev/null 2>&1; then
+        info "Xcode CLT present; 'swift' should be available. If not, run: xcode-select --install"
+    else
+        warn "installing Xcode Command Line Tools (a GUI dialog will open)…"
+        xcode-select --install || warn "run 'xcode-select --install' manually"
+    fi
+    exit 0
+fi
+
 case "$(uname -m)" in
     x86_64)        march=x86_64 ;;
     aarch64|arm64) march=aarch64 ;;

@@ -12,6 +12,11 @@ if need_cmd composer; then
     exit 0
 fi
 
+# macOS: brew composer pulls PHP in as a dependency — no sudo/phar dance needed.
+if is_mac; then
+    pkg_install composer && { info "composer installed via brew"; exit 0; } || { err "composer brew install failed"; exit 1; }
+fi
+
 # Composer needs PHP. Install it via our php script if missing.
 if ! need_cmd php; then
     info "php not found — installing it first"

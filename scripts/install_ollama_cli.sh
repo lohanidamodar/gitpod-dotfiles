@@ -10,6 +10,11 @@ if need_cmd ollama; then
     exit 0
 fi
 
+# macOS: brew (the release archive below is Linux-only and unpacks into /usr).
+if is_mac; then
+    pkg_install ollama && { info "ollama installed via brew"; exit 0; } || { err "ollama brew install failed"; exit 1; }
+fi
+
 case "$(uname -m)" in
     x86_64)        pkg=ollama-linux-amd64.tar.zst ;;
     aarch64|arm64) pkg=ollama-linux-arm64.tar.zst ;;
