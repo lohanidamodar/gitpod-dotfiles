@@ -141,11 +141,15 @@ _menu_arrow() {
     local visible=$((th-4)); [ "$visible" -lt 5 ] && visible=5
     [ "$visible" -gt "$nrows" ] && visible=$nrows
 
-    local cursor=0 top=0 first=1 frame=$((visible+3)) key rest cr rr box ptr nsel up_ind dn_ind
-    # fd 3 is the terminal (read+write), opened by the caller. Hide the cursor and
-    # make sure it's restored on Ctrl-C.
+    local cursor=0 top=0 first=1 frame=$((visible+3)) key rest cr rr box ptr nsel up_ind dn_ind saved_stty
+    # fd 3 is the terminal (read+write), opened by the caller. bash's `read -n1`
+    # only auto-raws fd 0, so with `-u 3` the tty stays in cooked/echo mode and
+    # arrow keys echo instead of navigating. Put fd 3 into raw no-echo mode with
+    # stty ourselves (and restore it on every exit path). No stty => fall back.
+    saved_stty="$(stty -g <&3 2>/dev/null)" || { _menu_numbered; return; }
+    stty -echo -icanon min 1 time 0 <&3 2>/dev/null || { _menu_numbered; return; }
     printf '\033[?25l' >&3
-    trap 'printf "\033[?25h\n" >&3 2>/dev/null; exit 130' INT
+    trap 'stty "$saved_stty" <&3 2>/dev/null; printf "\033[?25h\n" >&3 2>/dev/null; exit 130' INT
 
     while :; do
         cr=${_itemrow[$cursor]}                                  # current row of cursor
@@ -186,11 +190,11 @@ _menu_arrow() {
             a|A) for v in "${_MVARS[@]}"; do printf -v "$v" '%s' 1; done ;;
             n|N) for v in "${_MVARS[@]}"; do printf -v "$v" '%s' 0; done ;;
             d|D) i=0; for v in "${_MVARS[@]}"; do printf -v "$v" '%s' "${_MDEFS[$i]}"; i=$((i+1)); done ;;
-            q|Q) printf '\033[?25h\n' >&3; trap - INT; info "aborted; nothing installed"; exit 0 ;;
+            q|Q) stty "$saved_stty" <&3 2>/dev/null; printf '\033[?25h\n' >&3; trap - INT; info "aborted; nothing installed"; exit 0 ;;
             ''|$'\n'|$'\r') break ;;
         esac
     done
-    printf '\033[?25h\n' >&3; trap - INT
+    stty "$saved_stty" <&3 2>/dev/null; printf '\033[?25h\n' >&3; trap - INT
 }
 
 # Entry point: build shared var/default snapshots, then pick the arrow UI when a
