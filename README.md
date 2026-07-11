@@ -56,6 +56,7 @@ installer skips work that's already done.
 | Docker | `INSTALL_DOCKER` | engine + compose (Docker Desktop on macOS) |
 | zsh | `INSTALL_ZSH` | shell + plugins (autosuggestions, syntax highlight) + starship + this repo's `~/.zshrc` |
 | (set zsh default) | `SET_ZSH_DEFAULT` | `chsh` to zsh |
+| git config | `INSTALL_GITCONFIG` | `~/.gitconfig` (delta, aliases, sane defaults); identity kept in `~/.gitconfig.local` |
 | tmux | `INSTALL_TMUX` | tmux + Catppuccin config + TPM plugins |
 | Nerd Fonts | `INSTALL_NERD_FONT` | JetBrainsMono + Symbols (for icons) |
 | Node.js | `INSTALL_NODE` | node + npm |
@@ -80,11 +81,18 @@ Enable by setting the var to `1`. These are **not** installed by a plain run.
 | OpenAI Codex CLI | `INSTALL_CODEX` | AI coding CLI |
 | Google Antigravity CLI | `INSTALL_ANTIGRAVITY` | AI coding CLI |
 | Flutter | `INSTALL_FLUTTER` | heavy; bundles Dart |
+| Flutter build deps | `INSTALL_FLUTTER_DEPS` | JDK 17 + Android Studio + Android SDK + Xcode CLT (mac) + CocoaPods (mac) + fastlane |
 | Dart | `INSTALL_DART` | standalone Dart SDK |
 | PHP | `INSTALL_PHP` | latest stable + common extensions |
+| Swoole | `INSTALL_SWOOLE` | add Swoole to PHP (Appwrite core); best-effort per manager |
 | Composer | `INSTALL_COMPOSER` | implies PHP |
 | Ruby | `INSTALL_RUBY` | + bundler |
 | Swift | `INSTALL_SWIFT` | swiftly (apt/dnf) / AUR (Arch) |
+| Kubernetes tools | `INSTALL_KUBE` | kubectl, helm, k9s, kubectx, kubens, stern |
+| Appwrite CLI | `INSTALL_APPWRITE_CLI` | deploy functions, manage projects (needs Node) |
+| mise | `INSTALL_MISE` | polyglot runtime version manager (Node/Flutter/PHP/…) |
+| direnv | `INSTALL_DIRENV` | per-directory env via `.envrc` |
+| yq | `INSTALL_YQ` | YAML/JSON processor (compose + k8s manifests) |
 | Modern CLI utils | `INSTALL_SHELL_UTILS` | eza, bat, fd, ripgrep, fzf, zoxide, git-delta, duf, btop, jq, tealdeer |
 | eza | `INSTALL_EZA` | just eza (a subset of the bundle above) |
 | Ollama | `INSTALL_OLLAMA` | `ollama` CLI |
@@ -104,8 +112,13 @@ INSTALL_COMPOSER=1 bash ~/.dotfiles/setup.sh
 # A PHP/Ruby web-dev box
 INSTALL_PHP=1 INSTALL_COMPOSER=1 INSTALL_RUBY=1 bash ~/.dotfiles/setup.sh
 
-# Flutter (+ Dart) mobile setup
-INSTALL_FLUTTER=1 bash ~/.dotfiles/setup.sh
+# Flutter app dev: SDK + full mobile toolchain (JDK, Android Studio/SDK, CocoaPods, fastlane)
+INSTALL_FLUTTER=1 INSTALL_FLUTTER_DEPS=1 bash ~/.dotfiles/setup.sh
+
+# Appwrite platform + cloud: PHP+Swoole, Appwrite CLI, Kubernetes, yq, direnv, AI CLIs
+INSTALL_PHP=1 INSTALL_SWOOLE=1 INSTALL_COMPOSER=1 INSTALL_APPWRITE_CLI=1 \
+  INSTALL_KUBE=1 INSTALL_YQ=1 INSTALL_DIRENV=1 INSTALL_MISE=1 \
+  INSTALL_CLAUDE=1 INSTALL_CODEX=1 bash ~/.dotfiles/setup.sh
 
 # Pass toggles through the curl bootstrap
 curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | INSTALL_CLAUDE=1 bash
@@ -187,6 +200,24 @@ INSTALL_SHELL_UTILS=1 bash ~/.dotfiles/setup.sh   # or: bash ~/.dotfiles/scripts
 On Debian/Ubuntu the installer symlinks `bat`→`batcat` and `fd`→`fdfind` into
 `~/.local/bin` so the usual names work. To use git-delta as your diff pager, add
 it to `~/.gitconfig` (`[core] pager = delta`).
+
+## Git
+
+`INSTALL_GITCONFIG=1` (default on) deploys `git/.gitconfig` to `~/.gitconfig`:
+git-delta as the diff pager (with a safe `less` fallback when delta isn't
+installed), histogram diff, `zdiff3` conflict style, `rerere`, and handy aliases
+(`st`, `co`, `cob`, `lg`, `amend`, `undo`, `wip`, …).
+
+Your **identity is never stored in this public repo**. The config `[include]`s
+`~/.gitconfig.local` (untracked), and setup.sh seeds that file from whatever
+`user.name`/`user.email` you already had — so deploying never clobbers it. On a
+fresh box with no identity yet, write it straight to the local file (so a later
+re-deploy of `~/.gitconfig` can't overwrite it):
+
+```bash
+git config --file ~/.gitconfig.local user.name  "Your Name"
+git config --file ~/.gitconfig.local user.email "you@example.com"
+```
 
 ## After installing
 

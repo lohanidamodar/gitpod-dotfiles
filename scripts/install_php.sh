@@ -9,7 +9,11 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 # shellcheck source=common.sh
 . "$DIR/common.sh"
 
-if need_cmd php; then
+# Appwrite core runs on Swoole; enable it opt-in so a plain PHP install stays
+# lean. INSTALL_SWOOLE=1 attempts the native package for the active manager.
+: "${INSTALL_SWOOLE:=0}"
+
+if need_cmd php && [ "$INSTALL_SWOOLE" != "1" ]; then
     info "php already installed: $(php -v | head -1)"
     exit 0
 fi
@@ -17,6 +21,7 @@ fi
 # Extensions most PHP projects (and Composer) expect.
 COMMON_EXTS="mbstring curl xml zip bcmath intl gd mysqli pdo_mysql pdo_pgsql pdo_sqlite sqlite3 gmp soap"
 
+if ! need_cmd php; then
 case "$PKG" in
     pacman)
         pkg_install php
@@ -80,5 +85,31 @@ case "$PKG" in
         ;;
     *) err "Unsupported package manager for php install"; exit 1 ;;
 esac
-
 info "php installed: $(php -v | head -1)"
+fi
+
+# ---- Swoole (opt-in: INSTALL_SWOOLE=1) -------------------------------------
+# Appwrite core is built on Swoole. Best-effort via the native package; if it's
+# not packaged, fall back to PECL, and otherwise point at the usual Docker path.
+if [ "${INSTALL_SWOOLE:-0}" = "1" ]; then
+    if php -m 2>/dev/null | grep -qiE '^(swoole|openswoole)$'; then
+        info "swoole already enabled in php"
+    else
+        info "=== enabling Swoole (Appwrite core) ==="
+        swoole_ok=0
+        case "$PKG" in
+            brew)   pkg_install swoole && swoole_ok=1 || true ;;
+            pacman) pkg_install php-swoole && swoole_ok=1 || true ;;   # AUR/extra where available
+            apt)    ver="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)"
+                    pkg_install "php${ver}-swoole" && swoole_ok=1 || true ;;
+            dnf)    pkg_install php-swoole && swoole_ok=1 || true ;;
+            *)      : ;;
+        esac
+        if [ "$swoole_ok" != "1" ]; then
+            warn "no Swoole package for $PKG; try:  pecl install swoole"
+            warn "(Appwrite dev usually runs Swoole inside its Docker image, so native Swoole is optional)"
+        else
+            info "swoole installed"
+        fi
+    fi
+fi

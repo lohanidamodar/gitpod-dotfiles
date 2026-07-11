@@ -62,6 +62,25 @@ if command -v fzf >/dev/null 2>&1; then
     source <(fzf --zsh) 2>/dev/null
 fi
 
+# --- DEV TOOL HOOKS (mise version manager, direnv per-dir env) ---
+command -v mise   >/dev/null 2>&1 && eval "$(mise activate zsh)"
+command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
+
+# --- ANDROID / FLUTTER SDK ---
+# Point at the Android SDK from install_flutter_deps.sh (or Android Studio).
+if [ -d "$HOME/Library/Android/sdk" ]; then
+    export ANDROID_HOME="$HOME/Library/Android/sdk"     # macOS default
+elif [ -d "$HOME/Android/Sdk" ]; then
+    export ANDROID_HOME="$HOME/Android/Sdk"             # Linux default
+fi
+if [ -n "${ANDROID_HOME:-}" ]; then
+    export ANDROID_SDK_ROOT="$ANDROID_HOME"
+    for _d in "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/platform-tools" "$ANDROID_HOME/emulator"; do
+        [ -d "$_d" ] && case ":$PATH:" in *":$_d:"*) ;; *) export PATH="$PATH:$_d" ;; esac
+    done
+    unset _d
+fi
+
 # --- EDITOR ---
 # Mirror the fish config's micro/kate preference, but only point at binaries
 # that actually exist so a missing editor never becomes a broken $EDITOR.

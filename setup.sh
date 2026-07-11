@@ -26,6 +26,7 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 : "${INSTALL_ZSH:=1}"
 : "${SET_ZSH_DEFAULT:=1}"
 : "${INSTALL_FISH:=0}"       # fish is now opt-in; zsh is the default shell
+: "${INSTALL_GITCONFIG:=1}"  # deploy ~/.gitconfig (identity kept in ~/.gitconfig.local)
 : "${INSTALL_TMUX:=1}"
 : "${INSTALL_NERD_FONT:=1}"
 : "${INSTALL_NODE:=1}"
@@ -39,15 +40,24 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 : "${INSTALL_ANTIGRAVITY:=0}"
 
 # Opt-in (default 0): extra languages / tools.
-: "${INSTALL_FLUTTER:=0}"   # heavy
-: "${INSTALL_DART:=0}"      # (Flutter already bundles Dart)
-: "${INSTALL_PHP:=0}"       # latest stable PHP + common extensions
-: "${INSTALL_COMPOSER:=0}"  # implies PHP
+: "${INSTALL_FLUTTER:=0}"      # heavy
+: "${INSTALL_FLUTTER_DEPS:=0}" # JDK + Android Studio/SDK + Xcode CLT + CocoaPods + fastlane
+: "${INSTALL_DART:=0}"         # (Flutter already bundles Dart)
+: "${INSTALL_PHP:=0}"          # latest stable PHP + common extensions
+: "${INSTALL_SWOOLE:=0}"       # add Swoole to PHP (Appwrite core); read by install_php.sh
+: "${INSTALL_COMPOSER:=0}"     # implies PHP
 : "${INSTALL_RUBY:=0}"
 : "${INSTALL_SWIFT:=0}"
 : "${INSTALL_SHELL_UTILS:=0}"  # modern CLI bundle: eza/bat/fd/rg/fzf/zoxide/...
 : "${INSTALL_EZA:=0}"          # just eza on its own (subset of shell utils)
 : "${INSTALL_OLLAMA:=0}"
+
+# Opt-in (default 0): infra + platform-dev tooling.
+: "${INSTALL_KUBE:=0}"         # kubectl, helm, k9s, kubectx, kubens, stern
+: "${INSTALL_APPWRITE_CLI:=0}" # appwrite CLI (deploy functions, manage projects)
+: "${INSTALL_MISE:=0}"         # polyglot runtime version manager (node/flutter/php/…)
+: "${INSTALL_DIRENV:=0}"       # per-directory env via .envrc
+: "${INSTALL_YQ:=0}"           # YAML/JSON processor (compose + k8s manifests)
 
 info "distro=$DISTRO_ID  pkg=$PKG  sudo='${SUDO:-<root>}'  wsl=$(is_wsl && echo yes || echo no)"
 
@@ -115,6 +125,31 @@ if [ "$SET_ZSH_DEFAULT" = "1" ] && need_cmd zsh; then
     esac
 fi
 
+# ---- git config ------------------------------------------------------------
+# Deploy the shared ~/.gitconfig, but keep personal identity in the untracked
+# ~/.gitconfig.local so this (public) config never clobbers your name/email.
+if [ "$INSTALL_GITCONFIG" = "1" ]; then
+    info "installing git config to ~/.gitconfig (identity -> ~/.gitconfig.local)"
+    _gn="$(git config --global user.name 2>/dev/null || true)"
+    _ge="$(git config --global user.email 2>/dev/null || true)"
+    cp "$DIR/git/.gitconfig" "$HOME/.gitconfig"
+    if [ ! -f "$HOME/.gitconfig.local" ]; then
+        {
+            echo "# Personal git identity — untracked, not part of the dotfiles repo."
+            echo "[user]"
+            echo "    name = ${_gn}"
+            echo "    email = ${_ge}"
+        } > "$HOME/.gitconfig.local"
+        info "wrote ~/.gitconfig.local${_gn:+ (identity: $_gn <$_ge>)}"
+    fi
+    if [ -z "$_gn" ] || [ -z "$_ge" ]; then
+        warn "git identity incomplete; set it with:"
+        warn "  git config --file ~/.gitconfig.local user.name  \"Your Name\""
+        warn "  git config --file ~/.gitconfig.local user.email \"you@example.com\""
+    fi
+    unset _gn _ge
+fi
+
 # ---- terminal multiplexer + fonts ------------------------------------------
 run "$INSTALL_NERD_FONT" "nerd fonts"  "$DIR/scripts/install_nerd_font.sh"
 run "$INSTALL_TMUX"      "tmux"        "$DIR/scripts/install_tmux.sh"
@@ -130,9 +165,17 @@ run "$INSTALL_CLAUDE"      "claude cli"        "$DIR/scripts/install_claude_cli.
 run "$INSTALL_CODEX"       "codex cli"         "$DIR/scripts/install_codex_cli.sh"
 run "$INSTALL_ANTIGRAVITY" "antigravity cli"   "$DIR/scripts/install_antigravity_cli.sh"
 
+# ---- infra + platform-dev tooling (opt-in) ---------------------------------
+run "$INSTALL_KUBE"         "kubernetes tools"   "$DIR/scripts/install_kube_tools.sh"
+run "$INSTALL_APPWRITE_CLI" "appwrite cli"       "$DIR/scripts/install_appwrite_cli.sh"
+run "$INSTALL_MISE"         "mise"               "$DIR/scripts/install_mise.sh"
+run "$INSTALL_DIRENV"       "direnv"             "$DIR/scripts/install_direnv.sh"
+run "$INSTALL_YQ"           "yq"                 "$DIR/scripts/install_yq.sh"
+
 # ---- extra languages / tools (opt-in) --------------------------------------
-run "$INSTALL_FLUTTER"     "flutter"           "$DIR/scripts/install_flutter.sh"
-run "$INSTALL_DART"        "dart"              "$DIR/scripts/install_dart.sh"
+run "$INSTALL_FLUTTER"      "flutter"            "$DIR/scripts/install_flutter.sh"
+run "$INSTALL_FLUTTER_DEPS" "flutter build deps" "$DIR/scripts/install_flutter_deps.sh"
+run "$INSTALL_DART"         "dart"               "$DIR/scripts/install_dart.sh"
 run "$INSTALL_PHP"         "php"               "$DIR/scripts/install_php.sh"
 run "$INSTALL_COMPOSER"    "composer"          "$DIR/scripts/install_composer.sh"
 run "$INSTALL_RUBY"        "ruby"              "$DIR/scripts/install_ruby.sh"
