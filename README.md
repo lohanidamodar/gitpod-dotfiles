@@ -35,26 +35,25 @@ sudo dnf install -y git curl
 Bootstrap directly (clones to `~/.dotfiles`, then runs `setup.sh`):
 
 ```bash
+# Default install (the base set below)
 curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | bash
+
+# Interactive — pick what to install from a menu
+curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | INTERACTIVE=1 bash
 ```
 
 Or clone and run manually:
 
 ```bash
 git clone https://github.com/lohanidamodar/gitpod-dotfiles.git ~/.dotfiles
-bash ~/.dotfiles/setup.sh
+bash ~/.dotfiles/setup.sh          # default install
+bash ~/.dotfiles/setup.sh -i       # interactive menu (or --interactive)
 ```
 
 Re-running is safe: the bootstrap `git pull`s an existing clone, and every
 installer skips work that's already done.
 
 ### Interactive mode
-
-Prefer to pick from a menu instead of remembering env vars? Run with `-i`:
-
-```bash
-bash ~/.dotfiles/setup.sh -i          # or: --interactive
-```
 
 You get an arrow-key checklist (pre-checked to the defaults below) grouped by
 category: **↑/↓** (or `j`/`k`) to move, **Space** to toggle, `a`/`n` for

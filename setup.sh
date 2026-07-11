@@ -2,6 +2,13 @@
 # Dotfiles setup — works on macOS, Arch, Debian/Ubuntu, Fedora, and under WSL.
 # macOS uses Homebrew (auto-installed if missing); Linux uses the native manager.
 #
+# Run it one of two ways:
+#     bash setup.sh          # default install (the base set)
+#     bash setup.sh -i       # interactive menu — pick what to install (--interactive)
+# Or via the curl bootstrap (installs to ~/.dotfiles first):
+#     curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | bash
+#     curl -fsSL https://raw.githubusercontent.com/lohanidamodar/gitpod-dotfiles/main/install.sh | INTERACTIVE=1 bash
+#
 # If you are on a fresh Arch/WSL box that is still root-only, create a
 # non-root sudo user FIRST, then run this as that user:
 #     bash scripts/create_sudo_user.sh <username>   # run as root (no sudo yet)
