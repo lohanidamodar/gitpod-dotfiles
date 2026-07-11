@@ -1,0 +1,52 @@
+# Starship prompt — simple, clean, fast.
+# Deployed to ~/.config/starship.toml by setup.sh. Edit the repo copy.
+#
+# Speed: the explicit `format` below lists exactly the modules that run, so
+# starship never shells out to detect language/cloud/k8s versions it won't show.
+# Uses a few Nerd Font glyphs (the repo installs JetBrainsMono Nerd Font).
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Two lines: context on the first, a bare prompt char on the second — so long
+# paths/branches never crowd what you type. A blank line separates commands.
+format = """
+$directory$git_branch$git_status$cmd_duration
+$character"""
+
+add_newline = true
+command_timeout = 500   # ms; bail on any module that's slow rather than blocking
+
+[directory]
+style = "bold cyan"
+truncation_length = 3
+truncate_to_repo = true
+read_only = " "
+home_symbol = "~"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "bold yellow"
+# Compact, symbol-only status (no counts) keeps it fast and uncluttered.
+conflicted = "="
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+untracked = "?"
+stashed = "$"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+[cmd_duration]
+min_time = 2000         # only show when a command took > 2s
+style = "bold yellow"
+format = "took [$duration]($style) "
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vicmd_symbol = "[❮](bold green)"

@@ -83,6 +83,10 @@ run "$INSTALL_ZSH" "zsh shell" "$DIR/scripts/install_zsh.sh"
 info "installing zsh config to ~/.zshrc"
 cp "$DIR/zsh/.zshrc" "$HOME/.zshrc"
 
+info "installing starship config to ~/.config/starship.toml"
+mkdir -p "$HOME/.config"
+cp "$DIR/starship/starship.toml" "$HOME/.config/starship.toml"
+
 # ---- fish + config (opt-in) ------------------------------------------------
 run "$INSTALL_FISH" "fish shell" "$DIR/scripts/install_fish3.sh"
 

@@ -162,6 +162,11 @@ and initializes the modern CLI tools when present. Every alias degrades
 gracefully — e.g. `ls` uses `eza` if installed, else GNU or BSD `ls` — so a
 missing tool never breaks the shell.
 
+The starship prompt config (`starship/starship.toml` → `~/.config/starship.toml`)
+is a fast two-line setup: directory + git branch/status on line one, a bare
+`❯` on line two. Its explicit `format` lists only the modules that render, so
+starship never shells out to detect language/cloud versions it won't show.
+
 ### Modern CLI utils
 
 `INSTALL_SHELL_UTILS=1` installs a curated bundle of modern replacements, and
