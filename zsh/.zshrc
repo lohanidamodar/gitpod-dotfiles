@@ -16,6 +16,24 @@ for _brew in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew "$HOME/.linuxbr
 done
 unset _brew
 
+# --- COMPLETION SYSTEM ---
+# Powers tab-completion, including `git checkout <TAB>` -> branch names. Add
+# Homebrew's completion functions (e.g. brew's up-to-date _git, docker, …) to
+# fpath first, then initialise compinit. Without this, completion barely works.
+if [ -n "${HOMEBREW_PREFIX:-}" ]; then
+    fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+    [ -d "$HOMEBREW_PREFIX/share/zsh-completions" ] && fpath=("$HOMEBREW_PREFIX/share/zsh-completions" $fpath)
+fi
+autoload -Uz compinit && compinit
+# UX: arrow-key menu selection and case-insensitive matching.
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+# Complete the git aliases below like their full commands (so `gco <TAB>` and
+# `gcb <TAB>` offer branch names, `gl <TAB>` offers log options, etc.).
+compdef _git gco=git-checkout
+compdef _git gcb=git-checkout
+compdef _git gl=git-log
+
 # --- FAST PLUGIN LOADERS (autosuggestions + syntax highlighting) ---
 # Source a plugin from the first location that has it: brew's share dir on
 # macOS/Linuxbrew, or the distro package paths on native Linux (Arch nests
