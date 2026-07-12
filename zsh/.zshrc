@@ -34,6 +34,31 @@ compdef _git gco=git-checkout
 compdef _git gcb=git-checkout
 compdef _git gl=git-log
 
+# --- HISTORY ---
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt EXTENDED_HISTORY       # timestamp each entry
+setopt INC_APPEND_HISTORY     # write commands as they run, not at exit
+setopt SHARE_HISTORY          # share history across running shells
+setopt HIST_IGNORE_ALL_DUPS   # drop older duplicates of a command
+setopt HIST_IGNORE_SPACE      # skip commands that start with a space
+setopt HIST_VERIFY            # let you edit a !-expansion before running it
+
+# --- UP/DOWN = prefix history search ---
+# Type part of a command, then ↑ jumps to the most recent history entry that
+# STARTS with it (↓ goes forward) — instead of walking through all of history.
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+zmodload zsh/terminfo 2>/dev/null
+bindkey '^[[A' up-line-or-beginning-search      # ESC [ A  (normal mode)
+bindkey '^[OA' up-line-or-beginning-search      # ESC O A  (application mode)
+bindkey '^[[B' down-line-or-beginning-search
+bindkey '^[OB' down-line-or-beginning-search
+[ -n "${terminfo[kcuu1]:-}" ] && bindkey "${terminfo[kcuu1]}" up-line-or-beginning-search
+[ -n "${terminfo[kcud1]:-}" ] && bindkey "${terminfo[kcud1]}" down-line-or-beginning-search
+
 # --- FAST PLUGIN LOADERS (autosuggestions + syntax highlighting) ---
 # Source a plugin from the first location that has it: brew's share dir on
 # macOS/Linuxbrew, or the distro package paths on native Linux (Arch nests
