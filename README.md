@@ -193,6 +193,12 @@ navigation (unbound in herdr by default) is wired up:
 - **`prefix + Shift + ←/→`** — previous / next workspace
 - **`prefix + Shift + 1…9`** — jump straight to a workspace
 
+herdr can't label **tabs** with the terminal/OSC title (they're numbered, or
+renamed manually with `prefix + Shift + t`) — unlike tmux, which shows the pane
+title in its status bar. As a substitute, the sidebar surfaces each agent's
+`terminal_title_stripped` (e.g. Claude Code's task name) via
+`[ui.sidebar.agents]`.
+
 Validate the config with `herdr config check`; reload a running server with
 `herdr server reload-config`.
 

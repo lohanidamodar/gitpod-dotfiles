@@ -32,3 +32,10 @@ sidebar_collapsed_mode = "compact"
 hide_tab_bar_when_single_tab = true  # no tab bar until there are 2+ tabs
 prompt_new_tab_name = false          # new tabs get generated names — no name prompt
 pane_gaps = false                    # tmux-style: no gaps between split panes
+
+# herdr can't put the terminal title on tab labels (they're numbered), but it can
+# show it in the sidebar. Surface each agent's terminal title (e.g. Claude Code's
+# task/branch name) there so you still get the "terminal tab title" at a glance.
+[ui.sidebar.agents]
+row_gap = 0
+rows = [["state_icon", "workspace", "tab"], ["terminal_title_stripped"]]
