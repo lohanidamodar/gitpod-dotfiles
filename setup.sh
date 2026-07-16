@@ -53,7 +53,8 @@ _MENU=(
     "INSTALL_ZSH|zsh + config + starship"
     "SET_ZSH_DEFAULT|Make zsh the default shell"
     "INSTALL_GITCONFIG|git config (delta, aliases)"
-    "INSTALL_TMUX|tmux + Catppuccin config"
+    "INSTALL_HERDR|herdr (AI-agent-aware terminal multiplexer)"
+    "INSTALL_TMUX|tmux + Catppuccin config (alternative to herdr)"
     "INSTALL_NERD_FONT|Nerd Fonts"
     "INSTALL_NODE|Node.js + npm"
     "INSTALL_BUN|Bun"
@@ -237,7 +238,8 @@ interactive_menu() {
 : "${SET_ZSH_DEFAULT:=1}"
 : "${INSTALL_FISH:=0}"       # fish is now opt-in; zsh is the default shell
 : "${INSTALL_GITCONFIG:=1}"  # deploy ~/.gitconfig (identity kept in ~/.gitconfig.local)
-: "${INSTALL_TMUX:=1}"
+: "${INSTALL_HERDR:=1}"      # AI-agent-aware terminal multiplexer (default; replaces tmux)
+: "${INSTALL_TMUX:=0}"       # tmux is now opt-in (herdr is the default multiplexer)
 : "${INSTALL_NERD_FONT:=1}"
 : "${INSTALL_NODE:=1}"
 : "${INSTALL_BUN:=1}"
@@ -379,6 +381,7 @@ fi
 
 # ---- terminal multiplexer + fonts ------------------------------------------
 run "$INSTALL_NERD_FONT" "nerd fonts"  "$DIR/scripts/install_nerd_font.sh"
+run "$INSTALL_HERDR"     "herdr"       "$DIR/scripts/install_herdr.sh"
 run "$INSTALL_TMUX"      "tmux"        "$DIR/scripts/install_tmux.sh"
 
 # ---- dev CLIs (default on) -------------------------------------------------

@@ -1,0 +1,28 @@
+# herdr — AI-agent-aware terminal multiplexer.
+# Deployed to ~/.config/herdr/config.toml by scripts/install_herdr.sh.
+# Full reference: https://herdr.dev/docs/configuration/
+
+onboarding = false
+
+[terminal]
+default_shell = "zsh"   # this repo makes zsh the default login shell
+shell_mode = "auto"
+new_cwd = "follow"      # new panes/tabs open in the current working directory
+
+[keys]
+# Ctrl+Space to match the tmux muscle memory this repo used before.
+prefix = "ctrl+space"
+new_tab = "prefix+c"
+next_tab = "prefix+n"
+previous_tab = "prefix+p"
+
+[theme]
+name = "catppuccin"     # matches the tmux Catppuccin (Mocha) theme
+
+# Sidebar: per-workspace agent state, plus git branch/status.
+[ui.sidebar.spaces]
+row_gap = 0
+rows = [
+  ["state_icon", "workspace"],
+  ["branch", "git_status"],
+]
