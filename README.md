@@ -78,7 +78,7 @@ The default (non-interactive) run is unchanged.
 | zsh | `INSTALL_ZSH` | shell + plugins (autosuggestions, syntax highlight) + starship + this repo's `~/.zshrc` |
 | (set zsh default) | `SET_ZSH_DEFAULT` | `chsh` to zsh |
 | git config | `INSTALL_GITCONFIG` | `~/.gitconfig` (delta, aliases, sane defaults); identity kept in `~/.gitconfig.local` |
-| herdr | `INSTALL_HERDR` | AI-agent-aware terminal multiplexer + config (the default; tmux alternative) |
+| tmux | `INSTALL_TMUX` | tmux + Catppuccin config + TPM plugins |
 | Nerd Fonts | `INSTALL_NERD_FONT` | JetBrainsMono + Symbols (for icons) |
 | Node.js | `INSTALL_NODE` | node + npm |
 | Bun | `INSTALL_BUN` | bun |
@@ -98,7 +98,7 @@ Enable by setting the var to `1`. These are **not** installed by a plain run.
 | Tool | Env var | Notes |
 |------|---------|-------|
 | fish | `INSTALL_FISH` | shell + this repo's config (zsh is the default) |
-| tmux | `INSTALL_TMUX` | tmux + Catppuccin config + TPM plugins (herdr is the default multiplexer) |
+| herdr | `INSTALL_HERDR` | AI-agent-aware terminal multiplexer (tmux alternative); minimal config |
 | Claude Code CLI | `INSTALL_CLAUDE` | AI coding CLI |
 | OpenAI Codex CLI | `INSTALL_CODEX` | AI coding CLI |
 | Google Antigravity CLI | `INSTALL_ANTIGRAVITY` | AI coding CLI |
@@ -159,22 +159,9 @@ bash ~/.dotfiles/scripts/install_eza.sh         # eza
 # ...see scripts/ for the full list
 ```
 
-## herdr (default multiplexer)
+## tmux (default multiplexer)
 
-[herdr](https://github.com/ogulcancelik/herdr) is a Rust, AI-agent-aware terminal
-multiplexer — like tmux, but it detects the AI coding agents (Claude Code, Codex,
-…) running in each pane and shows their state (working / blocked / done / idle) in
-a sidebar. It's the default here; start it by running `herdr`.
-
-Config is installed to `~/.config/herdr/config.toml` (TOML). This repo sets the
-prefix to **`Ctrl+Space`** (matching the old tmux muscle memory), zsh as the
-shell, and the Catppuccin theme. Detach with `Ctrl+Space q` (prefix + `q`) and
-reattach by running `herdr` again. Full reference: <https://herdr.dev/docs/>.
-
-## tmux (opt-in)
-
-tmux is still available with `INSTALL_TMUX=1` (herdr is the default). Config is
-installed to `~/.config/tmux/tmux.conf` (Catppuccin Mocha theme).
+Config is installed to `~/.config/tmux/tmux.conf` (Catppuccin Mocha theme).
 The prefix is **`Ctrl+Space`**. Highlights:
 
 - Splits: `prefix + |` (vertical), `prefix + -` (horizontal) — open in the current dir
@@ -184,6 +171,21 @@ The prefix is **`Ctrl+Space`**. Highlights:
 - Copy mode (vi): `prefix + v`, `y` to yank (pipes to the Windows clipboard on WSL)
 
 Alt-based keys are intentionally avoided so they stay free for the GlazeWM.
+
+## herdr (opt-in alternative)
+
+[herdr](https://github.com/ogulcancelik/herdr) is a Rust, AI-agent-aware terminal
+multiplexer — like tmux, but it can detect the AI coding agents running in each
+pane. Enable it with `INSTALL_HERDR=1` (tmux is the default); start it with
+`herdr`.
+
+The bundled `~/.config/herdr/config.toml` keeps it deliberately **minimal /
+tmux-like**: prefix is **`Ctrl+Space`**, zsh shell, Catppuccin theme, and the
+heavier UI is turned off — `prompt_new_tab_name = false` (no name prompt on new
+tabs), `hide_tab_bar_when_single_tab = true`, and `sidebar_collapsed_mode =
+"hidden"` so collapsing the sidebar (**`prefix + b`**) makes it disappear
+entirely. Validate the config with `herdr config check`; reload a running server
+with `herdr server reload-config`.
 
 ## WSL notes
 

@@ -1,8 +1,11 @@
-# herdr — AI-agent-aware terminal multiplexer.
+# herdr — kept minimal / tmux-like (sidebar out of the way, no prompts).
 # Deployed to ~/.config/herdr/config.toml by scripts/install_herdr.sh.
-# Full reference: https://herdr.dev/docs/configuration/
+# Full reference: https://herdr.dev/docs/  (dump all keys with: herdr --default-config)
 
 onboarding = false
+
+[theme]
+name = "catppuccin"     # matches the tmux Catppuccin (Mocha) theme
 
 [terminal]
 default_shell = "zsh"   # this repo makes zsh the default login shell
@@ -10,19 +13,13 @@ shell_mode = "auto"
 new_cwd = "follow"      # new panes/tabs open in the current working directory
 
 [keys]
-# Ctrl+Space to match the tmux muscle memory this repo used before.
+# Ctrl+Space prefix to match the tmux muscle memory this repo used.
 prefix = "ctrl+space"
-new_tab = "prefix+c"
-next_tab = "prefix+n"
-previous_tab = "prefix+p"
+toggle_sidebar = "prefix+b"   # press Ctrl+Space then b to hide/show the sidebar
 
-[theme]
-name = "catppuccin"     # matches the tmux Catppuccin (Mocha) theme
-
-# Sidebar: per-workspace agent state, plus git branch/status.
-[ui.sidebar.spaces]
-row_gap = 0
-rows = [
-  ["state_icon", "workspace"],
-  ["branch", "git_status"],
-]
+[ui]
+# Minimal, tmux-like presentation.
+sidebar_collapsed_mode = "hidden"    # collapsed sidebar takes zero width (fully hidden)
+hide_tab_bar_when_single_tab = true  # no tab bar until there are 2+ tabs
+prompt_new_tab_name = false          # new tabs get generated names — no name prompt
+pane_gaps = false                    # tmux-style: no gaps between split panes

@@ -53,8 +53,7 @@ _MENU=(
     "INSTALL_ZSH|zsh + config + starship"
     "SET_ZSH_DEFAULT|Make zsh the default shell"
     "INSTALL_GITCONFIG|git config (delta, aliases)"
-    "INSTALL_HERDR|herdr (AI-agent-aware terminal multiplexer)"
-    "INSTALL_TMUX|tmux + Catppuccin config (alternative to herdr)"
+    "INSTALL_TMUX|tmux + Catppuccin config"
     "INSTALL_NERD_FONT|Nerd Fonts"
     "INSTALL_NODE|Node.js + npm"
     "INSTALL_BUN|Bun"
@@ -81,6 +80,7 @@ _MENU=(
     "INSTALL_RUBY|Ruby + bundler"
     "INSTALL_SWIFT|Swift"
     "#|Extra tools"
+    "INSTALL_HERDR|herdr (AI-agent-aware multiplexer; tmux alternative)"
     "INSTALL_VSCODE|Visual Studio Code + code CLI"
     "INSTALL_SHELL_UTILS|Modern CLI utils (eza/bat/fd/rg/fzf/zoxide/…)"
     "INSTALL_EZA|eza only"
@@ -238,8 +238,7 @@ interactive_menu() {
 : "${SET_ZSH_DEFAULT:=1}"
 : "${INSTALL_FISH:=0}"       # fish is now opt-in; zsh is the default shell
 : "${INSTALL_GITCONFIG:=1}"  # deploy ~/.gitconfig (identity kept in ~/.gitconfig.local)
-: "${INSTALL_HERDR:=1}"      # AI-agent-aware terminal multiplexer (default; replaces tmux)
-: "${INSTALL_TMUX:=0}"       # tmux is now opt-in (herdr is the default multiplexer)
+: "${INSTALL_TMUX:=1}"       # tmux is the default terminal multiplexer
 : "${INSTALL_NERD_FONT:=1}"
 : "${INSTALL_NODE:=1}"
 : "${INSTALL_BUN:=1}"
@@ -260,6 +259,7 @@ interactive_menu() {
 : "${INSTALL_COMPOSER:=0}"     # implies PHP
 : "${INSTALL_RUBY:=0}"
 : "${INSTALL_SWIFT:=0}"
+: "${INSTALL_HERDR:=0}"        # herdr: AI-agent-aware multiplexer (tmux alternative)
 : "${INSTALL_VSCODE:=0}"       # Visual Studio Code + `code` CLI
 : "${INSTALL_VSCODE_EXTENSIONS:=0}"  # curated extensions; read by install_vscode.sh
 : "${INSTALL_SHELL_UTILS:=0}"  # modern CLI bundle: eza/bat/fd/rg/fzf/zoxide/...
