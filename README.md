@@ -181,11 +181,20 @@ pane. Enable it with `INSTALL_HERDR=1` (tmux is the default); start it with
 
 The bundled `~/.config/herdr/config.toml` keeps it deliberately **minimal /
 tmux-like**: prefix is **`Ctrl+Space`**, zsh shell, Catppuccin theme, and the
-heavier UI is turned off — `prompt_new_tab_name = false` (no name prompt on new
-tabs), `hide_tab_bar_when_single_tab = true`, and `sidebar_collapsed_mode =
-"hidden"` so collapsing the sidebar (**`prefix + b`**) makes it disappear
-entirely. Validate the config with `herdr config check`; reload a running server
-with `herdr server reload-config`.
+heavier UI is trimmed — `prompt_new_tab_name = false` (no name prompt on new
+tabs), `hide_tab_bar_when_single_tab = true`, and `pane_gaps = false`.
+
+Collapse the sidebar with **`prefix + b`**; it uses `sidebar_collapsed_mode =
+"compact"` so it shrinks to a **narrow rail that still lists your open
+workspaces** (switch to `"hidden"` if you want it gone entirely). Workspace
+navigation (unbound in herdr by default) is wired up:
+
+- **`prefix + w`** — workspace picker (popup list, like tmux `prefix + w`)
+- **`prefix + Shift + ←/→`** — previous / next workspace
+- **`prefix + Shift + 1…9`** — jump straight to a workspace
+
+Validate the config with `herdr config check`; reload a running server with
+`herdr server reload-config`.
 
 ## WSL notes
 

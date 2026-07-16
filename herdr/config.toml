@@ -15,11 +15,20 @@ new_cwd = "follow"      # new panes/tabs open in the current working directory
 [keys]
 # Ctrl+Space prefix to match the tmux muscle memory this repo used.
 prefix = "ctrl+space"
-toggle_sidebar = "prefix+b"   # press Ctrl+Space then b to hide/show the sidebar
+toggle_sidebar = "prefix+b"            # collapse/expand the sidebar rail
+# See + move between open workspaces (herdr leaves these unbound by default):
+workspace_picker = "prefix+w"          # popup list of workspaces (like tmux prefix+w)
+next_workspace = "prefix+shift+right"  # cycle to the next workspace
+previous_workspace = "prefix+shift+left" # cycle to the previous workspace
+switch_workspace = "prefix+shift+1..9" # jump straight to workspace 1–9
 
 [ui]
 # Minimal, tmux-like presentation.
-sidebar_collapsed_mode = "hidden"    # collapsed sidebar takes zero width (fully hidden)
+# Collapse the sidebar (prefix+b) to a narrow rail that still lists your open
+# workspaces — the bulky full sidebar is gone but you keep the overview. Use
+# "hidden" here instead if you want it to disappear completely (then reach
+# workspaces via the picker, prefix+w).
+sidebar_collapsed_mode = "compact"
 hide_tab_bar_when_single_tab = true  # no tab bar until there are 2+ tabs
 prompt_new_tab_name = false          # new tabs get generated names — no name prompt
 pane_gaps = false                    # tmux-style: no gaps between split panes
