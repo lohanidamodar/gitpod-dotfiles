@@ -6,11 +6,24 @@ DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 # shellcheck source=common.sh
 . "$DIR/common.sh"
 
+install_config() {
+    # Back up a pre-existing (non-managed) ~/.vimrc once, then deploy ours.
+    if [ -f "$HOME/.vimrc" ] && [ ! -f "$HOME/.vimrc.bak" ] \
+        && ! grep -q 'gitpod-dotfiles' "$HOME/.vimrc" 2>/dev/null; then
+        cp "$HOME/.vimrc" "$HOME/.vimrc.bak"
+        info "backed up your existing ~/.vimrc to ~/.vimrc.bak"
+    fi
+    info "installing vim config to ~/.vimrc"
+    cp "$DIR/../vim/vimrc" "$HOME/.vimrc"
+}
+
 if need_cmd vim; then
     info "vim already installed: $(vim --version 2>/dev/null | head -1)"
+    install_config
     exit 0
 fi
 
 # `vim` is the package name on brew and every Linux manager we support.
 pkg_install vim || { err "vim install failed"; exit 1; }
 info "vim installed: $(vim --version 2>/dev/null | head -1)"
+install_config

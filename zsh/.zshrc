@@ -168,6 +168,8 @@ alias untar='tar -zxvf '
 alias wget='wget -c '
 alias psmem='ps auxf | sort -nr -k 4'
 alias psmem10='ps auxf | sort -nr -k 4 | head -10'
+# Type a directory and press Enter to cd into it — `..`<Enter>, `src`<Enter>, etc.
+setopt AUTO_CD
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
@@ -206,6 +208,7 @@ alias cfmt="composer format"
 alias acinit="dclo && cinst && composer format && dc build appwrite && dc up -d && dc logs -f appwrite"
 
 # --- FUNCTIONS (ported from the fish config) ---
+take() { mkdir -p -- "$1" && cd -- "$1"; }  # make a dir (and parents) then cd in
 backup() { cp -- "$1" "$1.bak"; }          # backup <file>  ->  <file>.bak
 copy() {                                    # copy <src> <dst>  (directory-aware)
     if [ "$#" -eq 2 ] && [ -d "$1" ]; then

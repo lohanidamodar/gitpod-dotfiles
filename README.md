@@ -224,10 +224,17 @@ a portable version of a macOS `~/.zshrc`, so it works the same on macOS and Linu
 fish is still available opt-in with `INSTALL_FISH=1`.
 
 It also carries the aliases/functions ported from the fish config (`ls`/`ll`/`la`/`lt`,
-git `gco`/`gcb`/`gl`, docker `dc`/`dcl`/…, composer, `..`/`...`, `copy`, `backup`),
-and initializes the modern CLI tools when present. Every alias degrades
-gracefully — e.g. `ls` uses `eza` if installed, else GNU or BSD `ls` — so a
-missing tool never breaks the shell.
+git `gco`/`gcb`/`gl`, docker `dc`/`dcl`/…, composer, `..`/`...`, `vi`→`vim`, `copy`,
+`backup`, `take <dir>` = mkdir + cd), and initializes the modern CLI tools when
+present. `AUTO_CD` is on, so typing a directory path and pressing Enter cd's into
+it (`..`↵, `src`↵). Every alias degrades gracefully — e.g. `ls` uses `eza` if
+installed, else GNU or BSD `ls` — so a missing tool never breaks the shell.
+
+Vim (`INSTALL_VIM`, on by default) is installed if missing, and a minimal,
+plugin-free `~/.vimrc` is deployed (`vim/vimrc`): hybrid line numbers, system
+clipboard, sensible search/indent defaults, persistent undo, a clean statusline,
+and the built-in `habamax` colorscheme. An existing `~/.vimrc` is backed up to
+`~/.vimrc.bak` first.
 
 The starship prompt config (`starship/starship.toml` → `~/.config/starship.toml`)
 is a fast two-line setup: directory + git branch/status on line one, a bare

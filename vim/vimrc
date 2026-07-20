@@ -1,0 +1,105 @@
+" ~/.vimrc — minimal, beautiful, plugin-free.
+" Deployed to ~/.vimrc by scripts/install_vim.sh.
+" github.com/lohanidamodar/gitpod-dotfiles
+
+" ---- core ------------------------------------------------------------------
+set nocompatible
+syntax on
+filetype plugin indent on
+set encoding=utf-8
+set hidden                     " keep edited buffers around when switching
+set autoread                   " reload files changed outside Vim
+set history=1000
+set updatetime=300
+set ttimeout ttimeoutlen=10    " snappy <Esc>
+set lazyredraw
+
+" ---- appearance ------------------------------------------------------------
+set number relativenumber      " hybrid line numbers
+set cursorline
+set ruler
+set showcmd
+set noshowmode                 " the statusline already shows the mode
+set signcolumn=yes
+set scrolloff=5 sidescrolloff=8
+set wrap linebreak
+set laststatus=2
+set showmatch
+set title
+set wildmenu
+set wildmode=longest:full,full
+set wildignorecase
+
+" Truecolor + a modern built-in colorscheme (ships with Vim 8.2+); the
+" silent! keeps older Vims from erroring if habamax is missing.
+if has('termguicolors')
+  set termguicolors
+endif
+set background=dark
+silent! colorscheme habamax
+
+" Show whitespace gremlins.
+set list
+set listchars=tab:▸\ ,trail:·,extends:❯,precedes:❮,nbsp:␣
+
+" ---- search ----------------------------------------------------------------
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase                  " case-sensitive only when you type a capital
+
+" ---- indentation -----------------------------------------------------------
+set autoindent smartindent
+set expandtab                  " spaces, not tabs
+set shiftwidth=4 tabstop=4 softtabstop=4
+set shiftround smarttab
+set backspace=indent,eol,start
+
+" ---- files: no clutter, persistent undo ------------------------------------
+set noswapfile nobackup nowritebackup
+set formatoptions+=j           " remove comment leader when joining lines
+if has('persistent_undo')
+  silent! call mkdir($HOME . '/.vim/undo', 'p')
+  set undofile
+  set undodir=~/.vim/undo
+endif
+
+" ---- behaviour -------------------------------------------------------------
+set mouse=a
+set clipboard^=unnamed,unnamedplus   " yank/paste via the system clipboard
+set splitright splitbelow
+set confirm
+set nostartofline
+
+" ---- a clean, dependency-free statusline -----------------------------------
+set statusline=
+set statusline+=\ %f\                                   " path
+set statusline+=%m%r                                    " [+] / [RO]
+set statusline+=%=                                      " ── right side ──
+set statusline+=\ %y                                    " filetype
+set statusline+=\ %{&fileencoding?&fileencoding:&encoding}
+set statusline+=\ %P\ %l:%c\                            " position / line:col
+
+" ---- keymaps ---------------------------------------------------------------
+let mapleader = ' '
+nnoremap <silent> <leader><space> :nohlsearch<CR>       " clear search highlight
+nnoremap <leader>w :w<CR>
+nnoremap <leader>q :q<CR>
+" window navigation with Ctrl+h/j/k/l
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+" keep the selection when re-indenting
+xnoremap < <gv
+xnoremap > >gv
+" keep search matches centred
+nnoremap n nzzzv
+nnoremap N Nzzzv
+
+" ---- reopen a file at the last cursor position -----------------------------
+augroup last_position
+  autocmd!
+  autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+        \ | execute "normal! g`\"" | endif
+augroup END
