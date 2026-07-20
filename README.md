@@ -80,6 +80,7 @@ The default (non-interactive) run is unchanged.
 | git config | `INSTALL_GITCONFIG` | `~/.gitconfig` (delta, aliases, sane defaults); identity kept in `~/.gitconfig.local` |
 | tmux | `INSTALL_TMUX` | tmux + Catppuccin config + TPM plugins |
 | Nerd Fonts | `INSTALL_NERD_FONT` | JetBrainsMono + Symbols (for icons) |
+| Vim | `INSTALL_VIM` | installs vim if missing; zsh aliases `vi` → `vim` |
 | Node.js | `INSTALL_NODE` | node + npm |
 | Bun | `INSTALL_BUN` | bun |
 | GitHub CLI | `INSTALL_GH` | `gh` |

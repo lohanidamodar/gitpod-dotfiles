@@ -160,6 +160,9 @@ fi
 # cat -> bat when present (aliases affect interactive shells only, not scripts).
 command -v bat >/dev/null 2>&1 && alias cat='bat --paging=never'
 
+# vi -> vim (so both open Vim). Guarded so `vi` still works if vim is absent.
+command -v vim >/dev/null 2>&1 && alias vi='vim'
+
 alias tarnow='tar -acf '
 alias untar='tar -zxvf '
 alias wget='wget -c '

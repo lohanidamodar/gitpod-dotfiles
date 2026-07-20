@@ -55,6 +55,7 @@ _MENU=(
     "INSTALL_GITCONFIG|git config (delta, aliases)"
     "INSTALL_TMUX|tmux + Catppuccin config"
     "INSTALL_NERD_FONT|Nerd Fonts"
+    "INSTALL_VIM|Vim (aliases vi -> vim)"
     "INSTALL_NODE|Node.js + npm"
     "INSTALL_BUN|Bun"
     "INSTALL_GH|GitHub CLI"
@@ -240,6 +241,7 @@ interactive_menu() {
 : "${INSTALL_GITCONFIG:=1}"  # deploy ~/.gitconfig (identity kept in ~/.gitconfig.local)
 : "${INSTALL_TMUX:=1}"       # tmux is the default terminal multiplexer
 : "${INSTALL_NERD_FONT:=1}"
+: "${INSTALL_VIM:=1}"
 : "${INSTALL_NODE:=1}"
 : "${INSTALL_BUN:=1}"
 : "${INSTALL_GH:=1}"
@@ -385,6 +387,7 @@ run "$INSTALL_HERDR"     "herdr"       "$DIR/scripts/install_herdr.sh"
 run "$INSTALL_TMUX"      "tmux"        "$DIR/scripts/install_tmux.sh"
 
 # ---- dev CLIs (default on) -------------------------------------------------
+run "$INSTALL_VIM"         "vim"               "$DIR/scripts/install_vim.sh"
 run "$INSTALL_NODE"        "node + npm"        "$DIR/scripts/install_node.sh"
 run "$INSTALL_BUN"         "bun"               "$DIR/scripts/install_bun.sh"
 run "$INSTALL_GH"          "github cli"        "$DIR/scripts/install_gh.sh"
