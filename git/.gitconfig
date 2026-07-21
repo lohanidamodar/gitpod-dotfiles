@@ -18,6 +18,18 @@
 [fetch]
     prune = true
 
+# Authenticate HTTPS pull/push through the GitHub CLI (`gh auth login`) so no
+# tokens are stored in plaintext and remotes work without a separate credential
+# setup. The empty `helper =` clears any inherited helper first; bare `gh` keeps
+# this portable across machines. Harmless if gh isn't installed — it only runs
+# when git needs credentials for a github.com HTTPS remote.
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential
+
 [core]
     # Prefer git-delta (see INSTALL_SHELL_UTILS); fall back to less, then cat.
     # Git runs this via a shell, so probe with `command -v` first — a plain
