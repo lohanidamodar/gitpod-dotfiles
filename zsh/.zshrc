@@ -3,8 +3,21 @@
 # this over ~/.zshrc). Edit the repo copy, not this file, to keep changes.
 
 # --- TERMINAL PERFORMANCE & LOCALE ---
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
+# Only export a UTF-8 locale the system has actually generated. Forcing an
+# ungenerated locale (e.g. en_US.UTF-8 before `locale-gen` on Arch) makes every
+# subshell warn "setlocale: cannot change locale". Prefer en_US.UTF-8, then the
+# always-available C.UTF-8, otherwise leave the inherited locale untouched.
+if command -v locale >/dev/null 2>&1; then
+    _avail_locales=$(locale -a 2>/dev/null)
+    if printf '%s\n' "$_avail_locales" | grep -qix 'en_US.utf-\?8'; then
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+    elif printf '%s\n' "$_avail_locales" | grep -qix 'c.utf-\?8'; then
+        export LANG=C.UTF-8
+        unset LC_ALL
+    fi
+    unset _avail_locales
+fi
 
 # --- HOMEBREW (Apple Silicon, Intel mac, or Linuxbrew) ---
 # Load whichever brew exists so its bin/ and share/ are available below.
