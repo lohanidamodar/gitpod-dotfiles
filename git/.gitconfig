@@ -34,14 +34,16 @@
     # Prefer git-delta (see INSTALL_SHELL_UTILS); fall back to less, then cat.
     # Git runs this via a shell, so probe with `command -v` first — a plain
     # `delta || less -R` prints "delta: command not found" on every diff when a
-    # tool is missing; the guards degrade silently instead.
-    pager = if command -v delta >/dev/null 2>&1; then delta; elif command -v less >/dev/null 2>&1; then less -R; else cat; fi
+    # tool is missing; the guards degrade silently instead. The value MUST be
+    # double-quoted: `;` and `#` start a comment in git config, so an unquoted
+    # if-statement gets truncated at the first `;` and the shell errors.
+    pager = "if command -v delta >/dev/null 2>&1; then delta; elif command -v less >/dev/null 2>&1; then less -R; else cat; fi"
     autocrlf = input
     # editor is intentionally unset: git honours $EDITOR/$VISUAL, which the
     # deployed ~/.zshrc points at an editor that actually exists.
 
 [interactive]
-    diffFilter = if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi
+    diffFilter = "if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi"
 
 [delta]
     navigate = true
