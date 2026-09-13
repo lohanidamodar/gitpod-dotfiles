@@ -72,6 +72,19 @@ bindkey '^[OB' down-line-or-beginning-search
 [ -n "${terminfo[kcuu1]:-}" ] && bindkey "${terminfo[kcuu1]}" up-line-or-beginning-search
 [ -n "${terminfo[kcud1]:-}" ] && bindkey "${terminfo[kcud1]}" down-line-or-beginning-search
 
+# Before anything that probes for a tool: `starship`, `zoxide`, `fzf`,
+# `mise` and `direnv` below are each guarded by `command -v`, so a PATH
+# set after them finds nothing on the *first* shell — which is why the
+# prompt appeared only when you ran `zsh` again inside it.
+# --- RESTORE AI AGENTS & VS CODE CLI PATHS + local dev bins ---
+# 1. Standalone Claude Code / VS Code CLIs and other ~/.local/bin tools
+export PATH="$HOME/.local/bin:$PATH"
+# 2. Official-installer tool dirs (bun, cargo, flutter, dart) when present
+for _dir in "$HOME/.bun/bin" "$HOME/.cargo/bin" "$HOME/flutter/bin" "$HOME/dart-sdk/bin"; do
+    [ -d "$_dir" ] && case ":$PATH:" in *":$_dir:"*) ;; *) export PATH="$_dir:$PATH" ;; esac
+done
+unset _dir
+
 # --- FAST PLUGIN LOADERS (autosuggestions + syntax highlighting) ---
 # Source a plugin from the first location that has it: brew's share dir on
 # macOS/Linuxbrew, or the distro package paths on native Linux (Arch nests
@@ -100,15 +113,6 @@ command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
 cmux_notify() {
   printf '\e]777;notify;%s;%s\a' "$1" "$2"
 }
-
-# --- RESTORE AI AGENTS & VS CODE CLI PATHS + local dev bins ---
-# 1. Standalone Claude Code / VS Code CLIs and other ~/.local/bin tools
-export PATH="$HOME/.local/bin:$PATH"
-# 2. Official-installer tool dirs (bun, cargo, flutter, dart) when present
-for _dir in "$HOME/.bun/bin" "$HOME/.cargo/bin" "$HOME/flutter/bin" "$HOME/dart-sdk/bin"; do
-    [ -d "$_dir" ] && case ":$PATH:" in *":$_dir:"*) ;; *) export PATH="$_dir:$PATH" ;; esac
-done
-unset _dir
 
 # --- MODERN CLI TOOL INIT (installed by scripts/install_shell_utils.sh) ---
 # Each is optional; the aliases below fall back to the classic tool when absent.
